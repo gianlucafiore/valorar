@@ -59,7 +59,27 @@ app.get('/', exports.isAuth.simple, (req, res) => {
     if (token) {
         tokenString = token.split(' ')[1];
         const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
-        return res.status(200).send({ nombre: payload.name });
+        return res.status(200).send({
+            id: payload.sub,
+            nombre: payload.name,
+            rol: payload.role
+        });
+    }
+    else
+        res.status(500).send("Not Authenticated");
+});
+app.get('/profile/:id', exports.isAuth.simple, async (req, res) => {
+    const token = req.headers.authorization;
+    let tokenString;
+    if (token) {
+        tokenString = token.split(' ')[1];
+        const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
+        let user = await db_1.default.query(`SELECT * FROM acountUser WHERE id = ${Number(req.params.id)}`);
+        if (payload.sub == req.params.id || payload.role == 3) {
+            // PUEDE EDITAR
+            user[0].canEdit = true;
+        }
+        return res.status(200).send(user[0]);
     }
     else
         res.status(500).send("Not Authenticated");
@@ -67,9 +87,11 @@ app.get('/', exports.isAuth.simple, (req, res) => {
 app.post('/login', async (req, res) => {
     console.log(req.body.email);
     let acount = await db_1.default.query(`SELECT * FROM acountUser WHERE email = ${db_1.default.escape(req.body.email)}`);
-    if (acount[0] && compareHash(req.body.contrasenia + "", acount[0].contrasenia)) {
+    if (acount.length == 1 && compareHash(req.body.pass + "", acount[0].contrasenia)) {
         let token = createToken(acount[0]);
         return res.send({
+            id: acount[0].id,
+            razonSocial: acount[0].razonSocial,
             token: token
         });
     }
@@ -101,7 +123,7 @@ function createToken(user) {
     const payload = {
         sub: user.id,
         role: user.rol,
-        name: user.email,
+        name: user.razonSocial,
         iat: moment_1.default().unix(),
         exp: moment_1.default().add(14, 'days').unix()
     };

@@ -95,7 +95,28 @@ app.get('/', isAuth.simple,(req:Request,res:Response)=> {
     if(token){
         tokenString= token.split(' ')[1];
         const payload = jwt.decode(tokenString, config.apiKey);
-        return res.status(200).send({nombre:payload.name});
+        return res.status(200).send({
+            id:payload.sub,
+            nombre:payload.name,
+            rol:payload.role
+        });
+    }
+    else res.status(500).send("Not Authenticated");
+})
+app.get('/profile/:id', isAuth.simple,async (req:Request,res:Response)=> {  
+    const token = req.headers.authorization;
+    let tokenString:string;
+    if(token){
+        tokenString= token.split(' ')[1];
+        const payload = jwt.decode(tokenString, config.apiKey);
+
+        let user = await db.query(`SELECT * FROM acountUser WHERE id = ${Number(req.params.id)}`)
+        if(payload.sub == req.params.id || payload.role == 3)
+        {   // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
+            // PUEDE EDITAR
+               user[0].canEdit = true;
+        }
+        return res.status(200).send(user[0]);
     }
     else res.status(500).send("Not Authenticated");
 })
@@ -105,10 +126,12 @@ app.post('/login',async (req:Request, res:Response)=>
     console.log(req.body.email)
     let acount:acountUser[] = await db.query(`SELECT * FROM acountUser WHERE email = ${db.escape(req.body.email)}`);
 
-    if(acount[0] && compareHash(req.body.contrasenia+"", acount[0].contrasenia))
+    if(acount.length == 1 && compareHash(req.body.pass+"", acount[0].contrasenia))
     {
         let token = createToken(acount[0]);
         return res.send({
+            id:acount[0].id,
+            razonSocial:acount[0].razonSocial,
             token:token
         });
     }
@@ -145,7 +168,7 @@ function createToken(user:acountUser)
     const payload = {
         sub: user.id,
         role: user.rol,
-        name:user.email,
+        name:user.razonSocial,
         iat: moment().unix(),
         exp: moment().add(14,'days').unix()
     };

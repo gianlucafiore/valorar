@@ -1,7 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Col, Row, Card, Button, Image, Form, ButtonGroup, Badge } from 'react-bootstrap';
+import Jodit from 'jodit-react';
+
+import config from '../config';
 
 const Perfil = (props)=>{
+    const [data,setData] = useState("");
+    const [editar, toggleEditar] = useState(false)
+    const [user, setUser] = useState({id:"",razonSocial:"",rol:""});
+
+    useEffect(()=>{ 
+        let id = window.location.hash.slice(1).split("/")[1]
+        if(!user.id)
+        fetch(config.url+'/api/acount/profile/'+id,{ 
+            headers:{
+                "raw":"json",
+                Authorization:localStorage.session
+            }
+        })
+        .then(data => {
+            data.json()
+            .then(d =>  setUser(d)) 
+        })  
+    })
+    
     return(
         <React.Fragment>
             <Container>
@@ -10,8 +32,14 @@ const Perfil = (props)=>{
                         <img style={{maxHeight:300}} width="100%" src={"https://image.shutterstock.com/image-photo/amazing-mountain-landscape-colorful-vivid-260nw-693715240.jpg"}></img>
                     </Col>
                 </Row>
+                {user.canEdit ? <Row className='py-3'>
+                    <Col>
+                        <Button className="mr-3 rounded-0" variant='outline-secondary' size='sm'>Editar Información general</Button>
+                        <Button className="mr-3 rounded-0" variant='outline-secondary' size='sm'>Editar descripción</Button>
+                    </Col>
+                </Row> : null}
                 <Row>
-                    <Col md="6">
+                    <Col md="5">
                         <Card className='rounded-0' style={{borderTop:"solid 3px #184ca1"}}>
                             {/* <Card.Header>Featured</Card.Header> */}
                             <Card.Body style={{textAlign:"center"}}>
@@ -36,10 +64,12 @@ const Perfil = (props)=>{
                                 <Row>
                                     <Col>
                                         📞 0341 15664566
-                                    </Col>
+                                    </Col>  
                                     <Col>
                                          info@empresa.com
-                                    </Col> 
+                                    </Col>  
+                                </Row> <br></br>
+                                <Row> 
                                     <Col>
                                         <ButtonGroup>
                                         <Button variant='danger' size='sm'>CHAT</Button>
@@ -58,13 +88,15 @@ const Perfil = (props)=>{
                             </Card.Body>
                         </Card>
                     </Col>
-                    <Col md="6">
+                    <Col md="7">
                         <Card className='rounded-0' style={{borderTop:"solid 3px #184ca1"}}>
-                            <Card.Body style={{textAlign:"center"}}>
-                            <Card.Title>Empresa de servicios industriales</Card.Title><hr></hr>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas suscipit accumsan felis et lobortis. Donec vitae orci libero. Donec et dolor accumsan est dictum faucibus vel nec sapien. Pellentesque ut varius metus. Etiam maximus purus eget nunc facilisis, in efficitur leo placerat. Suspendisse eleifend, metus vel sollicitudin placerat, eros orci blandit sapien, vel vulputate turpis metus nec nisl. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Aliquam commodo turpis ac tincidunt aliquet. Interdum et malesuada fames ac ante ipsum primis in faucibus. Fusce ullamcorper sem nec lectus euismod feugiat. Curabitur sed sem leo. Curabitur aliquet congue scelerisque. Donec pulvinar ante et massa fringilla, ut commodo turpis tristique. Sed eu purus tincidunt, accumsan lorem vitae, cursus urna. Vivamus rutrum sapien eget leo ultrices tincidunt.
-
-                            Aenean eu pellentesque odio. Ut a erat a arcu tempor bibendum. Aenean rhoncus est a iaculis porttitor. Cras sit amet sagittis risus. Mauris nisl ante, semper ut tortor in, sollicitudin pellentesque justo. Interdum et malesuada fames ac ante ipsum primis in faucibus. In et neque placerat, accumsan purus in, tristique nisi. Phasellus sollicitudin odio eu ipsum rutrum laoreet. Sed blandit pellentesque velit, sit amet porta metus convallis eget. Maecenas semper felis ut orci pretium blandit. Nullam eleifend nibh ut ligula tristique, non vehicula ante tempor. Integer ac nibh lorem. Mauris venenatis, elit eget euismod ultrices, massa nisl consequat mi, laoreet commodo libero diam ac magna.
+                            <Card.Body >
+                            <Card.Title>Empresa de servicios industriales </Card.Title><hr></hr>
+                            <Jodit 
+                                value={data}
+                                onChange={c => setData(c)}
+                            />
+                            <div dangerouslySetInnerHTML={{__html: data}} />
                             </Card.Body>
                         </Card>
                     </Col>

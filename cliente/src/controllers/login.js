@@ -1,7 +1,43 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {Container, Row, Form, Col, Card, Navbar, Button} from 'react-bootstrap'; 
+import config from '../config';
 
-const Login = ()=>{
+const Login = (props)=>{
+    const [email,setEmail] = useState("");
+    const [pass,setPass] = useState("");
+    const [alert,setAlert] = useState("");
+
+    const sendForm = e=>{
+        e.preventDefault();
+        fetch(config.url+"/api/acount/login",{
+            method:"post",
+            headers:{
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body:JSON.stringify({
+                email,
+                pass
+            })
+        })
+        .then(data => {
+            if(data.status == 403)
+            {
+                setAlert(<h6 className="text-danger">Datos incorrectos</h6>)
+            }
+            else if(data.status == 200)
+            {
+                data.json()
+                .then(data => {
+                    localStorage.session =  `Bearer ${data.token}`;
+                    //props.setUser({id:data.id,razonSocial:data.razonSocial})
+                    window.location = "/"
+                })
+            }
+        })
+        .catch(err => console.log(err))
+    }
+
     return(
         <div>
             <Navbar bg="dark" expand="lg" variant="dark" className="mb-2">
@@ -15,27 +51,31 @@ const Login = ()=>{
                                 <Card.Title>
                                     Ingresar
                                 </Card.Title>
-                                <form>
+                                {alert}
+                                <form onSubmit={sendForm}>
                                     <Form.Group>
                                         <small>Email</small>
-                                        <input type="email" className="form form-control rounded-0"/>
+                                        <input onChange={e=>setEmail(e.target.value)} value={email}
+                                            required type="email" className="form form-control rounded-0"/>
                                     </Form.Group>
                                     <Form.Group>
                                         <small>Contraseña</small>
-                                        <input type='password' className="form form-control rounded-0"/>
+                                        <input onChange={e=>setPass(e.target.value)} value={pass}
+                                            required type='password' className="form form-control rounded-0"/>
                                     </Form.Group>
+                                    <Row>
+                                        <Col>
+                                            <Button type="submit" className="rounded-0">Enviar</Button>
+                                        </Col>
+                                        <Col>
+                                            <a href="/#">recuperar cuenta</a>
+                                        </Col>
+                                        <Col>
+                                            <a href="/#">registrarse</a>
+                                        </Col>
+                                    </Row>
                                 </form>
-                                <Row>
-                                    <Col>
-                                        <Button className="rounded-0">Enviar</Button>
-                                    </Col>
-                                    <Col>
-                                        <a href="/#">recuperar cuenta</a>
-                                    </Col>
-                                    <Col>
-                                        <a href="/#">registrarse</a>
-                                    </Col>
-                                </Row>
+                                
                             </Card.Body>
                         </Card>
                     </Col>

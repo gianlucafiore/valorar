@@ -1,0 +1,1 @@
+{"version":3,"sources":["main.7ee62ae6.chunk.css","generalStyle.css"],"names":[],"mappings":"AAAA,6DAA6D,CCC7D,EACI,qBACJ","file":"main.7ee62ae6.chunk.css","sourcesContent":["@import url(https://fonts.googleapis.com/css2?family=Raleway);\n*{\n    font-family: 'Raleway'\n}\n","@import url('https://fonts.googleapis.com/css2?family=Raleway');\n*{\n    font-family: 'Raleway'\n}"]}

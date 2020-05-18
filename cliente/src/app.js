@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import ReactDOM from 'react-dom'
+import React, { useState, useEffect, forceUpdate } from 'react'; 
 import {Button, Navbar, Nav, NavDropdown, Form, FormControl, Container, Row, Col} from 'react-bootstrap';
 import Perfil from './controllers/perfil';
 import Home from './controllers/home';
@@ -9,93 +8,103 @@ import {IoMdNotificationsOutline, IoIosLogOut} from 'react-icons/io'
 import logoSitio from './logos/Marca-03.png'
 import config from './config';
 import Login from './controllers/login';
-import Registro from './controllers/registro';
+import Registro from './controllers/registro'; 
 
+function useForceUpdate(){
+    const [value, setValue] = useState(0); // integer state
+    return () => setValue(value => ++value); // update the state to force render
+}
 
 export default ()=>{
     const [ruta,setRuta] = useState(window.location.hash.slice(1));
-    const [user, setUser] = useState({});
-    // fetch(config.url+'/auth/local',{
-    //     method:"post",
-    //     headers:{
-    //         "raw":"json"
-    //     },
-    //     body:{
-    //         identifier:"system",
-    //         password:"123456"
-    //     }
-    // })
-    // .then(data => data.json())
-    // .then(data => console.log(data))
-
-    useEffect(()=>{
-        window.addEventListener("hashchange",()=>{
-            setRuta(window.location.hash.slice(1))
+    const [user, setUser] = useState({id:"",razonSocial:"",rol:""});
+    const [body, setBody] = useState(<div></div>)
+    useEffect(()=>{ 
+        fetch(config.url+'/api/acount',{ 
+            headers:{
+                "raw":"json",
+                Authorization:localStorage.session
+            }
         })
-    })
+        .then(data => {
+            data.json()
+            .then(d =>  setUser({id:d.id,razonSocial:d.nombre, rol:d.rol})) 
+        }) 
+
+        let retBody= ()=>{
+            console.log("ejecutate mierda")
+
+            let ruta = window.location.hash.slice(1);
+            let rutaSliced = ruta.split("/");
+            
+            console.log("ruta", rutaSliced)
+            if(!window.location.hash)
+            {
+                setBody(<Home></Home>)
+            }
+            else if(rutaSliced[0] == "login")
+            {
+                setBody(<Login/>)
+            }
+            else if(rutaSliced[0] == "registro")
+            {
+                setBody(<Registro/>)
+            }
+            else if(rutaSliced[0] == "profile" && !isNaN(rutaSliced[1]))
+            {
+                setBody(<Perfil/>)
+            } 
+        }
+        window.addEventListener("hashchange", retBody)
+        window.addEventListener("load", retBody)
+    },[])
+    
+    
+    
+    
+
     return(
-        <React.Fragment>
+    <React.Fragment>
+        {/* <Router> */}
             <Navbar bg='light' expand="lg" variant="light" className="fixed-top">
-                <Navbar.Brand href="#home"><img width='120' src={logoSitio}/></Navbar.Brand>
+                <Navbar.Brand href="#"><img width='120' src={logoSitio}/></Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="mr-auto ml-auto">
-                        <Nav.Link href="#home"><FaRegBuilding/> Empresas</Nav.Link>
-                        <Nav.Link href="#link"><FaHandsHelping/> Autónomos</Nav.Link>
-                        <Nav.Link href="#link"><FaRegAddressCard/> CV Postulantes</Nav.Link>
-                        <Nav.Link href="#link"><FaRegQuestionCircle/> Quienes somos</Nav.Link>
+                        <Nav.Link href="#empresas"><FaRegBuilding/> Empresas</Nav.Link>
+                        <Nav.Link href="#autonomos"><FaHandsHelping/> Autónomos</Nav.Link>
+                        {user.rol > 0 ? <Nav.Link href="#cv"><FaRegAddressCard/> CV Postulantes</Nav.Link> : null}
+                        <Nav.Link href="#info"><FaRegQuestionCircle/> Quienes somos</Nav.Link>
                     </Nav>
                     <Nav className="mr-0"> 
                     <Nav.Link href="#link"><IoMdNotificationsOutline/></Nav.Link>
                         <NavDropdown title={
                             user.id ? user.razonSocial : "Cuenta"
                         } id="basic-nav-dropdown" alignRight>
-                            {(()=>{
-                                console.log(user)
-                                if(user.id)
-                                {
-                                    return (
-                                    <React.Fragment>
-                                        <NavDropdown.Item href="#action/3.2"><FaUserTie/> Mi perfil </NavDropdown.Item>
-                                        <NavDropdown.Item href="#action/3.1"><IoIosLogOut/> Logout </NavDropdown.Item>
-                                    </React.Fragment>)
-                                }
-                                else{
-                                    return (
-                                        <React.Fragment>
-                                            <NavDropdown.Item href="#action/3.2">  Ingresar </NavDropdown.Item>
-                                            <NavDropdown.Item href="#action/3.1">  Registrarse </NavDropdown.Item>
-                                        </React.Fragment>)
-                                }                                
-                            })()}
+                            {user.id ?                                    
+                                (<React.Fragment>
+                                    <NavDropdown.Item  onClick={()=>{
+                                        window.location = "#profile/"+user.id
+                                        window.location.reload()
+                                    }}><FaUserTie/> Mi perfil </NavDropdown.Item>
+                                    <NavDropdown.Item onClick={()=>{
+                                        localStorage.session = ""
+                                        window.location.reload()
+                                    }}><IoIosLogOut/> Logout </NavDropdown.Item>
+                                </React.Fragment>)
+                                :                               
+                                
+                                (<React.Fragment>
+                                    <NavDropdown.Item href="#login">  Ingresar </NavDropdown.Item>
+                                    <NavDropdown.Item href="#registro">  Registrarse </NavDropdown.Item>
+                                </React.Fragment>)
+                                
+                            }
                         </NavDropdown>
                     </Nav>
                 </Navbar.Collapse>
-            </Navbar> 
-                {router(ruta)}
-        </React.Fragment>
+            </Navbar>        
+            {body} 
+    </React.Fragment>
     )
-}
-
-function router(ruta)
-{ 
-    let rutaSliced = ruta.split("/"); 
-    if(ruta == "")
-    {
-        return <Home/>
-    }
-    
-    else if(rutaSliced[0] == "login")
-    {
-        return <Login/>
-    }
-    else if(rutaSliced[0] == "registro")
-    {
-        return <Registro id={rutaSliced[1]}/>
-    }
-    else if(rutaSliced[0] == "profile" && !isNaN(rutaSliced[1]))
-    {
-        return <Perfil id={rutaSliced[1]}/>
-    }
-    
-}
+} 
