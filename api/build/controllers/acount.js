@@ -9,6 +9,13 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const moment_1 = __importDefault(require("moment"));
 const config_1 = __importDefault(require("../config"));
 const db_1 = __importDefault(require("./db"));
+const fs_1 = __importDefault(require("fs"));
+const multer_1 = __importDefault(require("multer"));
+const path_1 = __importDefault(require("path"));
+const image_size_1 = require("image-size");
+const gm_1 = __importDefault(require("gm"));
+const gm = gm_1.default.subClass({ imageMagick: true });
+const upload = multer_1.default();
 const app = express_1.default.Router();
 const saltRounds = 10;
 class IsAuth {
@@ -68,22 +75,145 @@ app.get('/', exports.isAuth.simple, (req, res) => {
     else
         res.status(500).send("Not Authenticated");
 });
-app.get('/profile/:id', exports.isAuth.simple, async (req, res) => {
+app.get('/profile/:id', async (req, res) => {
+    const token = req.headers.authorization;
+    let tokenString;
+    let user = await db_1.default.query(`SELECT * FROM acountUser WHERE id = ${Number(req.params.id)}`);
+    if (token != undefined && token.includes("Bearer ")) {
+        tokenString = token.split(' ')[1];
+        const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
+        if (payload.sub == req.params.id || payload.role == 3) {
+            // PUEDE EDITAR
+            user[0].canEdit = true;
+        }
+    }
+    return res.status(200).send(user[0]);
+});
+app.put('/profile/:id', exports.isAuth.simple, async (req, res) => {
     const token = req.headers.authorization;
     let tokenString;
     if (token) {
         tokenString = token.split(' ')[1];
         const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
-        let user = await db_1.default.query(`SELECT * FROM acountUser WHERE id = ${Number(req.params.id)}`);
         if (payload.sub == req.params.id || payload.role == 3) {
             // PUEDE EDITAR
-            user[0].canEdit = true;
+            let query = await db_1.default.query(`
+                UPDATE acountUser SET
+                    razonSocial = ${db_1.default.escape(req.body.razonSocial)},
+                    slogan = ${db_1.default.escape(req.body.slogan)},
+                    titulo = ${db_1.default.escape(req.body.titulo)},
+                    telefono = ${db_1.default.escape(req.body.telefono)},
+                    email = ${db_1.default.escape(req.body.email)},
+                    sitioWeb = ${db_1.default.escape(req.body.sitioWeb)},
+                    descripcion = ${db_1.default.escape(req.body.descripcion)}
+                WHERE id = ${Number(req.params.id)}
+            `);
+            console.log(req.body);
+            return res.send(200);
         }
-        return res.status(200).send(user[0]);
     }
     else
         res.status(500).send("Not Authenticated");
 });
+app.post('/profilephoto/:id', [upload.array("temp", 1), exports.isAuth.simple], async (req, res) => {
+    const token = req.headers.authorization;
+    let tokenString;
+    if (token) {
+        tokenString = token.split(' ')[1];
+        const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
+        if (payload.sub == req.params.id || payload.role == 3) {
+            // PUEDE EDITAR
+            let extension = req.files[0].originalname.split(".");
+            extension = extension[extension.length - 1];
+            let pathFormed = path_1.default.join(__dirname, `../public/uploads/images/cp_${req.params.id}_profile.` + extension);
+            fs_1.default.writeFileSync(pathFormed, req.files[0].buffer);
+            return res.send({
+                path: `/uploads/images/cp_${req.params.id}_profile.` + extension,
+                originalName: `${req.params.id}_profile.` + extension
+            });
+        }
+    }
+    else
+        res.status(500).send("Not Authenticated");
+});
+app.post('/portadaphoto/:id', [upload.array("temp", 1), exports.isAuth.simple], async (req, res) => {
+    const token = req.headers.authorization;
+    let tokenString;
+    if (token) {
+        tokenString = token.split(' ')[1];
+        const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
+        if (payload.sub == req.params.id || payload.role == 3) {
+            // PUEDE EDITAR
+            let extension = req.files[0].originalname.split(".");
+            extension = extension[extension.length - 1];
+            let pathFormed = path_1.default.join(__dirname, `../public/uploads/images/cp_${req.params.id}_portada.` + extension);
+            fs_1.default.writeFileSync(pathFormed, req.files[0].buffer);
+            return res.send({
+                path: `/uploads/images/cp_${req.params.id}_portada.` + extension,
+                originalName: `${req.params.id}_portada.` + extension
+            });
+        }
+    }
+    else
+        res.status(500).send("Not Authenticated");
+});
+app.post('/resizephotoperfil/:id', exports.isAuth.simple, async (req, res) => {
+    const token = req.headers.authorization;
+    let tokenString;
+    if (token) {
+        tokenString = token.split(' ')[1];
+        const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
+        if (payload.sub == req.params.id || payload.role == 3) {
+            // PUEDE EDITAR
+            console.log("resize");
+            resizeFoto(req, () => db_1.default.query(`UPDATE acountUser SET imagenPerfil = "/uploads/images/${req.body.originalName}"
+                        WHERE id = ${Number(req.params.id)}
+            `)
+                .then(() => res.send(200)));
+        }
+    }
+    else
+        res.status(500).send("Not Authenticated");
+});
+app.post('/resizephotoportada/:id', exports.isAuth.simple, async (req, res) => {
+    const token = req.headers.authorization;
+    let tokenString;
+    if (token) {
+        tokenString = token.split(' ')[1];
+        const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
+        if (payload.sub == req.params.id || payload.role == 3) {
+            // PUEDE EDITAR
+            console.log("resize");
+            resizeFoto(req, () => db_1.default.query(`UPDATE acountUser SET imagenPortada = "/uploads/images/${req.body.originalName}"
+                        WHERE id = ${Number(req.params.id)}
+            `)
+                .then(() => res.send(200)));
+        }
+    }
+    else
+        res.status(500).send("Not Authenticated");
+});
+const resizeFoto = (req, callb) => {
+    let pathFormed = req.body.originalName;
+    let dimensions = image_size_1.imageSize(path_1.default.join(__dirname, `../public/uploads/images/cp_${pathFormed}`));
+    let redimentions;
+    let cprutaArchivo = path_1.default.join(__dirname, `../public/uploads/images/cp_${pathFormed}`);
+    let rutaArchivo = path_1.default.join(__dirname, `../public/uploads/images/${pathFormed}`);
+    if (dimensions.width && dimensions.height) {
+        dimensions.width == 0 ? 100 : dimensions.width;
+        dimensions.height == 0 ? 100 : dimensions.height;
+        redimentions = {
+            width: ~~(dimensions.width * parseInt(req.body.crop.width) / 100),
+            height: ~~(dimensions.height * parseInt(req.body.crop.height) / 100),
+            left: ~~(dimensions.width * parseInt(req.body.crop.x) / 100),
+            top: ~~(dimensions.height * parseInt(req.body.crop.y) / 100)
+        };
+        gm(cprutaArchivo)
+            .crop(redimentions.width, redimentions.height, redimentions.left, redimentions.top)
+            .write(rutaArchivo, err => console.error(err));
+        return callb();
+    }
+};
 app.post('/login', async (req, res) => {
     console.log(req.body.email);
     let acount = await db_1.default.query(`SELECT * FROM acountUser WHERE email = ${db_1.default.escape(req.body.email)}`);

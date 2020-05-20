@@ -4,6 +4,14 @@ import bcrypt from 'bcryptjs';
 import moment from 'moment';
 import config from '../config';
 import db from './db';
+import fs from 'fs'; 
+import multer from 'multer';
+import path from 'path';  
+import {imageSize} from 'image-size';
+import gm0 from 'gm';
+const gm = gm0.subClass({imageMagick: true});
+
+const upload = multer()
 
 const app = express.Router();
 
@@ -103,23 +111,164 @@ app.get('/', isAuth.simple,(req:Request,res:Response)=> {
     }
     else res.status(500).send("Not Authenticated");
 })
-app.get('/profile/:id', isAuth.simple,async (req:Request,res:Response)=> {  
+app.get('/profile/:id',async (req:Request,res:Response)=> {  
     const token = req.headers.authorization;
     let tokenString:string;
-    if(token){
+    let user = await db.query(`SELECT * FROM acountUser WHERE id = ${Number(req.params.id)}`)
+    if(token != undefined && token.includes("Bearer ")){
         tokenString= token.split(' ')[1];
         const payload = jwt.decode(tokenString, config.apiKey);
 
-        let user = await db.query(`SELECT * FROM acountUser WHERE id = ${Number(req.params.id)}`)
         if(payload.sub == req.params.id || payload.role == 3)
         {   // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
                user[0].canEdit = true;
         }
-        return res.status(200).send(user[0]);
+    }
+    return res.status(200).send(user[0]);    
+})
+
+app.put('/profile/:id', isAuth.simple,async (req:Request,res:Response)=> {  
+    const token = req.headers.authorization;
+    let tokenString:string;
+    if(token){
+        tokenString= token.split(' ')[1];
+        const payload = jwt.decode(tokenString, config.apiKey);
+        if(payload.sub == req.params.id || payload.role == 3)
+        {   // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
+            // PUEDE EDITAR
+            let query = await db.query(`
+                UPDATE acountUser SET
+                    razonSocial = ${db.escape(req.body.razonSocial)},
+                    slogan = ${db.escape(req.body.slogan)},
+                    titulo = ${db.escape(req.body.titulo)},
+                    telefono = ${db.escape(req.body.telefono)},
+                    email = ${db.escape(req.body.email)},
+                    sitioWeb = ${db.escape(req.body.sitioWeb)},
+                    descripcion = ${db.escape(req.body.descripcion)}
+                WHERE id = ${Number(req.params.id)}
+            `)
+               console.log(req.body)
+               return res.send(200)
+        }
+        
     }
     else res.status(500).send("Not Authenticated");
 })
+
+app.post('/profilephoto/:id',[upload.array("temp",1), isAuth.simple],async (req:Request,res:Response)=> {
+    const token = req.headers.authorization;
+    let tokenString:string; 
+
+    if(token){
+        tokenString= token.split(' ')[1];
+        const payload = jwt.decode(tokenString, config.apiKey);
+        if(payload.sub == req.params.id || payload.role == 3)
+        {   // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
+            // PUEDE EDITAR
+            let extension = req.files[0].originalname.split(".")
+            extension = extension[extension.length-1]
+            let pathFormed = path.join(__dirname,`../public/uploads/images/cp_${req.params.id}_profile.`+extension)
+            fs.writeFileSync(pathFormed, req.files[0].buffer);
+            return res.send({
+                path:`/uploads/images/cp_${req.params.id}_profile.`+extension,
+                originalName: `${req.params.id}_profile.`+ extension
+            })
+        }        
+    }
+    else res.status(500).send("Not Authenticated");
+})
+app.post('/portadaphoto/:id',[upload.array("temp",1), isAuth.simple],async (req:Request,res:Response)=> {
+    const token = req.headers.authorization;
+    let tokenString:string; 
+
+    if(token){
+        tokenString= token.split(' ')[1];
+        const payload = jwt.decode(tokenString, config.apiKey);
+        if(payload.sub == req.params.id || payload.role == 3)
+        {   // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
+            // PUEDE EDITAR
+            let extension = req.files[0].originalname.split(".")
+            extension = extension[extension.length-1]
+            let pathFormed = path.join(__dirname,`../public/uploads/images/cp_${req.params.id}_portada.`+extension)
+            fs.writeFileSync(pathFormed, req.files[0].buffer);
+            return res.send({
+                path:`/uploads/images/cp_${req.params.id}_portada.`+extension,
+                originalName: `${req.params.id}_portada.`+ extension
+            })
+        }        
+    }
+    else res.status(500).send("Not Authenticated");
+})
+
+app.post('/resizephotoperfil/:id',isAuth.simple,async (req:Request,res:Response)=> {
+    const token = req.headers.authorization;
+    let tokenString:string; 
+
+    if(token){
+        tokenString= token.split(' ')[1];
+        const payload = jwt.decode(tokenString, config.apiKey);
+        if(payload.sub == req.params.id || payload.role == 3)
+        {   // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
+            // PUEDE EDITAR
+            console.log("resize")
+            resizeFoto(req,()=>
+            db.query(`UPDATE acountUser SET imagenPerfil = "/uploads/images/${req.body.originalName}"
+                        WHERE id = ${Number(req.params.id)}
+            `)
+            .then(()=> res.send(200)))
+        }        
+    }
+    else res.status(500).send("Not Authenticated");
+})
+app.post('/resizephotoportada/:id',isAuth.simple,async (req:Request,res:Response)=> {
+    const token = req.headers.authorization;
+    let tokenString:string; 
+
+    if(token){
+        tokenString= token.split(' ')[1];
+        const payload = jwt.decode(tokenString, config.apiKey);
+        if(payload.sub == req.params.id || payload.role == 3)
+        {   // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
+            // PUEDE EDITAR
+            console.log("resize")
+            resizeFoto(req,()=>
+            db.query(`UPDATE acountUser SET imagenPortada = "/uploads/images/${req.body.originalName}"
+                        WHERE id = ${Number(req.params.id)}
+            `)
+            .then(()=> res.send(200)))
+        }        
+    }
+    else res.status(500).send("Not Authenticated");
+})
+
+const resizeFoto = (req:Request, callb:any)=>
+{
+    let pathFormed = req.body.originalName
+    let dimensions = imageSize(path.join(__dirname,`../public/uploads/images/cp_${pathFormed}`));
+    let redimentions; 
+    let cprutaArchivo = path.join(__dirname,`../public/uploads/images/cp_${pathFormed}`);
+    let rutaArchivo = path.join(__dirname,`../public/uploads/images/${pathFormed}`);
+    if(dimensions.width && dimensions.height)
+    {
+        dimensions.width == 0 ? 100 : dimensions.width
+        dimensions.height == 0 ? 100 : dimensions.height
+        redimentions = {                
+            width: ~~(dimensions.width * parseInt(req.body.crop.width) /100),
+            height:~~(dimensions.height * parseInt(req.body.crop.height)/100),
+            left:~~(dimensions.width * parseInt(req.body.crop.x) /100),
+            top:~~(dimensions.height * parseInt(req.body.crop.y) /100)
+        }              
+        
+        gm
+        (cprutaArchivo)
+        .crop(redimentions.width, redimentions.height, redimentions.left, redimentions.top)
+        .write(rutaArchivo,err => console.error(err));
+
+        return callb();
+    }
+}
+
 
 app.post('/login',async (req:Request, res:Response)=> 
 { 

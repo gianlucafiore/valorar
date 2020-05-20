@@ -29,10 +29,8 @@ export default ()=>{
         .then(data => {
             data.json()
             .then(d =>  setUser({id:d.id,razonSocial:d.nombre, rol:d.rol})) 
-        }) 
-
-        let retBody= ()=>{
-            console.log("ejecutate mierda")
+        })
+        let retBody= ()=>{ 
 
             let ruta = window.location.hash.slice(1);
             let rutaSliced = ruta.split("/");
@@ -57,15 +55,10 @@ export default ()=>{
         }
         window.addEventListener("hashchange", retBody)
         window.addEventListener("load", retBody)
-    },[])
-    
-    
-    
-    
+    },[]) 
 
     return(
-    <React.Fragment>
-        {/* <Router> */}
+    <React.Fragment> 
             <Navbar bg='light' expand="lg" variant="light" className="fixed-top">
                 <Navbar.Brand href="#"><img width='120' src={logoSitio}/></Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
