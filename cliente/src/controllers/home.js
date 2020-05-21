@@ -43,7 +43,7 @@ const Home = ()=>{
                             <Col>
                                 <Card style={{borderTop:"solid 3px #2461b2"}} className="rounded-0">
                                     <Card.Header>
-                                       <h5> Buscás trabajo?</h5>
+                                        <h5> Buscás trabajo?</h5>
                                     </Card.Header>
                                     <Card.Body>
                                         <a href='/#cargarcv' className="btn btn-danger rounded-0">Publicá tu CV acá!</a><br></br>
