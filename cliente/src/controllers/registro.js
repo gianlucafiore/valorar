@@ -4,6 +4,7 @@ import config from '../config';
 
 const Registro = ()=>{
     const [razonSocial,setRazonSocial] = React.useState("")
+    const [userName,setUserName] = React.useState("")
     const [email, setEmail] = React.useState("")
     const [pass,setPass] = React.useState("")
     const [rPass,setrPass] = React.useState("")
@@ -25,6 +26,7 @@ const Registro = ()=>{
                     'Content-Type': 'application/json'
                 },
                 body:JSON.stringify({
+                    userName,
                     razonSocial,
                     email,
                     pass,
@@ -33,7 +35,7 @@ const Registro = ()=>{
             .then(data => {
                 if(data.status == 402)
                 {
-                    setrSocialBorder({l:"El email se encuentra en uso", b:"border border-danger"})
+                    setrSocialBorder({l:"El nombre de usuario se encuentra en uso", b:"border border-danger"})
                 }else
                 if(data.status == 200)
                 {
@@ -60,6 +62,13 @@ const Registro = ()=>{
                                 </Card.Title>
                                 <form onSubmit={submitForm}>
                                     <Form.Group>
+                                        <label htmlFor="rsocial">* Nombre de Usuario</label>
+                                        <input required value={userName} onChange={e => setUserName(e.target.value)}
+                                            id="rsocial" type="text" className={"form form-control rounded-0 "} required/>
+                                        <small className="text-muted">Será necesario para acceder a tu cuenta</small>
+                                        <small className="text-muted">{rSocialBorder.l}</small>
+                                    </Form.Group>
+                                    <Form.Group>
                                         <label htmlFor="rsocial">* Razón social</label>
                                         <input required value={razonSocial} onChange={e => setRazonSocial(e.target.value)}
                                             id="rsocial" type="text" className={"form form-control rounded-0 "} placeholder="Persona S.R.L" required/>
@@ -70,7 +79,7 @@ const Registro = ()=>{
                                         <input value={email} onChange={e => setEmail(e.target.value)}
                                             required type="email" id="email" className={"form form-control rounded-0 "+rSocialBorder.b}
                                             placeholder="info@ejemplo.com"/>
-                                        <small className="text-muted">{rSocialBorder.l}</small>
+                                        
                                     </Form.Group> 
                                     <Form.Group>
                                         <label htmlFor="pass">Contraseña</label>

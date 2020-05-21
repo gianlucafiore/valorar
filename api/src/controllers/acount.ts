@@ -290,17 +290,20 @@ app.post('/login',async (req:Request, res:Response)=>
 
 app.post('/registro', async (req:Request, res:Response)=>
 {
-    let user:acountUser[] = await db.query(`SELECT * FROM acountUser WHERE email = ${db.escape(req.body.email)}`);
+    let claveValidacion = (Math.floor(Math.random() * (10000000000 - 1000000000)) + 1000000000).toString(36);
+    let user:acountUser[] = await db.query(`SELECT * FROM acountUser WHERE userName = ${db.escape(req.body.userName)}`);
     if(user.length == 0 && req.body.email.includes("@"))
     {
         let data = {
+            userName: req.body.userName,
             razonSocial: req.body.razonSocial,
             email: req.body.email,
             contrasenia: genHash(req.body.pass+""),
             fechaAlta: new Date(2999,1,1),
             fechaBaja: new Date(),
             fechaCreacion: new Date(),
-            rol: 0
+            rol: 0,
+            claveValidacion: claveValidacion
         }; 
         let user = await db.query(`
             INSERT INTO acountUser (${Object.keys(data).join(",")}) 
@@ -308,11 +311,37 @@ app.post('/registro', async (req:Request, res:Response)=>
         `);
         sendMail(data.email, "Confirmar cuenta de VALOR-AR",`
             <p>Gracias por formar parte de nuestro equipo!</p>
-            <p>Para poder comenzar a usar la cuenta deberás validarla haciendo <a href="#">click acá</a></p>
+            <p>Para poder comenzar a usar la cuenta deberás validarla haciendo 
+                <a href="${config.host}/api/acount/validar?user=${data.userName}&clave=${data.claveValidacion}>
+                    click acá
+                </a>
+            </p>
         `)
         return res.send(user);
     }
     else res.status(402).send("El email está en uso");
+})
+app.get("/validar",async (req,res)=>{
+    const userName = req.query.userName;
+    const clave = req.query.clave;
+
+    let user =await db.query(`
+        SELECT * 
+        FROM acountUser 
+        WHERE userName = ${db.escape(userName)} && 
+              claveValidacion = ${db.escape(clave)}
+    `)
+    if(user.length == 0)
+    {
+        await db.query(`
+            UPDATE acountUser 
+            SET claveValidacion = "",
+                fechaAlta = ${db.escape(new Date())}
+            WHERE acountUser = ${db.escape(userName)}
+        `)
+        return res.status(200).redirect("/#validado")
+    }
+    else return res.status(403);
 })
 
 

@@ -1,5 +1,19 @@
 
-export default {
+let config = {
+    host:"http://valor-ar.com.ar:5000",
+    
+    apiKey:"65465798asdas--podaw4234asd4asgh5h464asd-.",
+    dbConn: {
+        user:"sistema",
+        password:"361224",
+        host:"localhost",
+        database:"valorar",
+        connectionLimit:5
+    }
+};
+
+config = process.env.NODE_ENV === "development" ? 
+{
     host:"http://localhost:5000",
     apiKey:"65465798asdas--podaw4234asd4asgh5h464asd-.",
     dbConn: {
@@ -9,4 +23,6 @@ export default {
         database:"valorar",
         connectionLimit:5
     }
-}
+}: config
+
+export default config;
