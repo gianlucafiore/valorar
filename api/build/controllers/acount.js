@@ -14,6 +14,7 @@ const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
 const image_size_1 = require("image-size");
 const gm_1 = __importDefault(require("gm"));
+const emails_1 = __importDefault(require("./emails"));
 const gm = gm_1.default.subClass({ imageMagick: true });
 const upload = multer_1.default();
 const app = express_1.default.Router();
@@ -235,14 +236,18 @@ app.post('/registro', async (req, res) => {
             razonSocial: req.body.razonSocial,
             email: req.body.email,
             contrasenia: genHash(req.body.pass + ""),
-            fechaAlta: new Date(),
-            fechaBaja: '29990101',
+            fechaAlta: new Date(2999, 1, 1),
+            fechaBaja: new Date(),
             fechaCreacion: new Date(),
             rol: 0
         };
         let user = await db_1.default.query(`
             INSERT INTO acountUser (${Object.keys(data).join(",")}) 
                         values ${db_1.default.escape(Object.values(data))}
+        `);
+        emails_1.default(data.email, "Confirmar cuenta de VALOR-AR", `
+            <p>Gracias por formar parte de nuestro equipo!</p>
+            <p>Para poder comenzar a usar la cuenta deberás validarla haciendo <a href="#">click acá</a></p>
         `);
         return res.send(user);
     }

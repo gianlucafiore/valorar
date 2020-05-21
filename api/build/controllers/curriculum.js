@@ -12,6 +12,7 @@ const path_1 = __importDefault(require("path"));
 const crypto_1 = __importDefault(require("crypto"));
 const emails_1 = __importDefault(require("./emails"));
 const config_1 = __importDefault(require("../config"));
+const moment_1 = __importDefault(require("moment"));
 app.post("/", multer_1.default().array("cv", 1), async (req, res) => {
     const cv = req.files[0];
     const cvBuffer = req.files[0].buffer;
@@ -30,7 +31,7 @@ app.post("/", multer_1.default().array("cv", 1), async (req, res) => {
         }
         fs_1.default.writeFileSync(pathToWrite, cvBuffer);
         let insert = await db_1.default.query(`
-            INSERT INTO curriculum (nombre, email,telefono,archivo,tags,claveSeguridad, fechaAlta, fechaCarga)
+            INSERT INTO curriculum (nombre, email,telefono,archivo,tags,claveSeguridad, fechaAlta, fechaCarga, fechaBaja)
             VALUES (
                 ${db_1.default.escape(userData.nombre)},
                 ${db_1.default.escape(userData.email)},
@@ -40,13 +41,15 @@ app.post("/", multer_1.default().array("cv", 1), async (req, res) => {
                 ${db_1.default.escape(claveSeguridad)},
                 ${db_1.default.escape(new Date(2999, 1, 1))},
                 ${db_1.default.escape(new Date())}
+                ${db_1.default.escape(moment_1.default().add(15, "days").toDate())}
             )
             ON DUPLICATE KEY UPDATE 
                 nombre = ${db_1.default.escape(userData.nombre)},
                 telefono = ${db_1.default.escape(userData.telefono)},
                 archivo = ${db_1.default.escape("/uploads/cv/" + pathId)},
                 tags = ${db_1.default.escape(userData.tags)},
-                claveSeguridad= ${db_1.default.escape(claveSeguridad)}
+                claveSeguridad= ${db_1.default.escape(claveSeguridad)},
+                fechaBaja = ${db_1.default.escape(moment_1.default().add(15, "days").toDate())}
         `);
         //enviar email
         emails_1.default(userData.email, `Hemos recibido tu Currículum ${!consultaEmail.length ? "- CONFIRMAR INFO" : ""}`, `
@@ -54,13 +57,13 @@ app.post("/", multer_1.default().array("cv", 1), async (req, res) => {
                 labroal.</p>
                 ${consultaEmail[0].fechaAlta > new Date() ? `<p><b>IMPORTANTE: Para dar de alta la información y que sea visible en la plataforma 
                 <a href="${config_1.default.host}/api/curriculum/activarcv?email=${userData.email}&clave=${claveSeguridad}">Clickeá acá!</a></b></p>` : ""}
-                <p><b>A continuación detallaremos la información que nos enviaste</b></p>
-                <br>
+                <p><b>A continuación detallaremos la información que nos enviaste</b></p><br>                
                 <p>NOMBRE COMPLETO: ${userData.nombre}</p>
                 <p>TELEFONO: ${userData.telefono}</p>
                 <p>ARCHIVO ADJUNTO: <a href="${config_1.default.host}/api/curriculum/${pathId}">Previsualizalo acá</a></p>
                 <p>PALABRAS CLAVE: ${userData.tags}</p>
                 <br>
+                <p>Esta información será dada de baja dentro de 15 días, luego tendrás que volver a recargar tu información</p>
                 <p>Para editar esta información deberás volver a cargar todo desde el mismo 
                     <a href="#">formulario</a>, ingresando el mismo email y adicionando la clave
                     de seguridad que te propiciamos a continuación: <b>${claveSeguridad}</b>

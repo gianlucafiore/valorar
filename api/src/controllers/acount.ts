@@ -9,6 +9,7 @@ import multer from 'multer';
 import path from 'path';  
 import {imageSize} from 'image-size';
 import gm0 from 'gm';
+import sendMail from './emails';
 const gm = gm0.subClass({imageMagick: true});
 
 const upload = multer()
@@ -296,8 +297,8 @@ app.post('/registro', async (req:Request, res:Response)=>
             razonSocial: req.body.razonSocial,
             email: req.body.email,
             contrasenia: genHash(req.body.pass+""),
-            fechaAlta: new Date(),
-            fechaBaja: '29990101',
+            fechaAlta: new Date(2999,1,1),
+            fechaBaja: new Date(),
             fechaCreacion: new Date(),
             rol: 0
         }; 
@@ -305,6 +306,10 @@ app.post('/registro', async (req:Request, res:Response)=>
             INSERT INTO acountUser (${Object.keys(data).join(",")}) 
                         values ${db.escape(Object.values(data))}
         `);
+        sendMail(data.email, "Confirmar cuenta de VALOR-AR",`
+            <p>Gracias por formar parte de nuestro equipo!</p>
+            <p>Para poder comenzar a usar la cuenta deberás validarla haciendo <a href="#">click acá</a></p>
+        `)
         return res.send(user);
     }
     else res.status(402).send("El email está en uso");
