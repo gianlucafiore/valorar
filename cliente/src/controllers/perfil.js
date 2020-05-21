@@ -72,8 +72,7 @@ const Perfil = (props)=>{
         })
         .then(data => {
             if(data.status == 200){
-                toggleEditar(false)
-                alert("Guardado")
+                toggleEditar(false) 
             }
             else
                 console.log(data)

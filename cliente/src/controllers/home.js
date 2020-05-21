@@ -46,7 +46,7 @@ const Home = ()=>{
                                        <h5> Buscás trabajo?</h5>
                                     </Card.Header>
                                     <Card.Body>
-                                        <Button variant="danger" className="rounded-0">Publicá tu CV acá!</Button><br></br>
+                                        <a href='/#cargarcv' className="btn btn-danger rounded-0">Publicá tu CV acá!</a><br></br>
                                         <small>Se lo haremos llegar directamente a las empresas que forman parte de nuestro equipo</small>
                                     </Card.Body>
                                 </Card> 
