@@ -1,0 +1,20 @@
+{
+  "name": "valorar",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "compile":"tsc -p api/ && cd cliente && npm run build && cp -r build/. ../api/build/public && node ../api/build/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gianlucafiore/valorar.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gianlucafiore/valorar/issues"
+  },
+  "homepage": "https://github.com/gianlucafiore/valorar#readme"
+}

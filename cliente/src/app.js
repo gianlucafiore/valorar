@@ -11,6 +11,7 @@ import Login from './controllers/login';
 import Registro from './controllers/registro'; 
 import CargaCv from './controllers/cargarCv';
 import MailConfirmado from './controllers/mailConfirmado';
+import VerCvs from './controllers/verCvs';
 
 function useForceUpdate(){
     const [value, setValue] = useState(0); // integer state
@@ -57,6 +58,10 @@ export default ()=>{
             else if(rutaSliced[0] == "cargarcv")
             {
                 setBody(<CargaCv/>)
+            }
+            else if(rutaSliced[0] == "vercvs")
+            {
+                setBody(<VerCvs/>)
             }
             else if(rutaSliced[0] == "profile" && !isNaN(rutaSliced[1]))
             {

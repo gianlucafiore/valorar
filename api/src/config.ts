@@ -6,7 +6,7 @@ let config = {
     dbConn: {
         user:"sistema",
         password:"361224",
-        host:"localhost",
+        host:"valor-ar.com.ar",
         database:"valorar",
         connectionLimit:5
     }

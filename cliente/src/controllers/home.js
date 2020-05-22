@@ -16,7 +16,7 @@ const Home = ()=>{
                                     <Card.Body>
                                         <h5>Usuarios destacados</h5>
                                         <Card>
-                                            asdasd
+                                            ffff
                                         </Card>
                                     </Card.Body>
                                 </Card>

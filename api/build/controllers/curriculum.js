@@ -1,7 +1,7 @@
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
-}
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const app = express_1.default.Router();
@@ -14,8 +14,15 @@ const emails_1 = __importDefault(require("./emails"));
 const config_1 = __importDefault(require("../config"));
 const moment_1 = __importDefault(require("moment"));
 app.post("/", multer_1.default().array("cv", 1), async (req, res) => {
-    const cv = req.files[0];
-    const cvBuffer = req.files[0].buffer;
+    let cv;
+    let cvBuffer;
+    if (req.files instanceof Array) {
+        cv = req.files[0];
+        cvBuffer = req.files[0].buffer;
+    }
+    else {
+        return res.status(400);
+    }
     const userData = JSON.parse(req.body.user);
     const pathId = `${crypto_1.default.randomBytes(20).toString("hex")}_${cv.originalname}`;
     const pathToWrite = path_1.default.join(__dirname, `../private/uploads/cv/${pathId}`);

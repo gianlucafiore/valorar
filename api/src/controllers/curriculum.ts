@@ -11,8 +11,15 @@ import config from '../config';
 import moment from 'moment';
 
 app.post("/", multer().array("cv",1),async (req:Request,res:Response)=>{
-    const cv = req.files[0];
-    const cvBuffer = req.files[0].buffer;
+    let cv;
+    let cvBuffer;
+    if(req.files instanceof Array){
+        cv = req.files[0];
+        cvBuffer = req.files[0].buffer;
+    }
+    else{
+        return res.status(400);
+    }
     const userData = JSON.parse(req.body.user);
     const pathId = `${crypto.randomBytes(20).toString("hex")}_${cv.originalname}`;
     const pathToWrite = path.join(__dirname,`../private/uploads/cv/${pathId}`);
@@ -133,6 +140,15 @@ app.post("/recuperoclave",async (req,res)=>{
     {
         res.status(500)
     }
+})
+
+app.get("/", isAuth.premium ,async (req,res)=>{
+    let cvs = db.query(`
+        SELECT nombre, email, telefono, archivo, tags, fechaAlta 
+        FROM curriculum
+        ORDER BY DESC fechaAlta
+        LIMIT 50
+    `)
 })
 
 

@@ -1,8 +1,9 @@
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
-}
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.isAuth = void 0;
 const express_1 = __importDefault(require("express"));
 const jwt_simple_1 = __importDefault(require("jwt-simple"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
@@ -83,7 +84,7 @@ app.get('/profile/:id', async (req, res) => {
     if (token != undefined && token.includes("Bearer ")) {
         tokenString = token.split(' ')[1];
         const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
-        if (payload.sub == req.params.id || payload.role == 3) {
+        if (payload.sub == req.params.id || payload.role == 3) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
             user[0].canEdit = true;
         }
@@ -96,7 +97,7 @@ app.put('/profile/:id', exports.isAuth.simple, async (req, res) => {
     if (token) {
         tokenString = token.split(' ')[1];
         const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
-        if (payload.sub == req.params.id || payload.role == 3) {
+        if (payload.sub == req.params.id || payload.role == 3) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
             let query = await db_1.default.query(`
                 UPDATE acountUser SET
@@ -119,18 +120,18 @@ app.put('/profile/:id', exports.isAuth.simple, async (req, res) => {
 app.post('/profilephoto/:id', [upload.array("temp", 1), exports.isAuth.simple], async (req, res) => {
     const token = req.headers.authorization;
     let tokenString;
-    if (token) {
+    if (token && req.files.length == 1 && req.files instanceof Array) {
         tokenString = token.split(' ')[1];
         const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
-        if (payload.sub == req.params.id || payload.role == 3) {
+        if (payload.sub == req.params.id || payload.role == 3) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
             let extension = req.files[0].originalname.split(".");
-            extension = extension[extension.length - 1];
-            let pathFormed = path_1.default.join(__dirname, `../public/uploads/images/cp_${req.params.id}_profile.` + extension);
+            let strExtension = extension[extension.length - 1];
+            let pathFormed = path_1.default.join(__dirname, `../public/uploads/images/cp_${req.params.id}_profile.` + strExtension);
             fs_1.default.writeFileSync(pathFormed, req.files[0].buffer);
             return res.send({
-                path: `/uploads/images/cp_${req.params.id}_profile.` + extension,
-                originalName: `${req.params.id}_profile.` + extension
+                path: `/uploads/images/cp_${req.params.id}_profile.` + strExtension,
+                originalName: `${req.params.id}_profile.` + strExtension
             });
         }
     }
@@ -140,18 +141,18 @@ app.post('/profilephoto/:id', [upload.array("temp", 1), exports.isAuth.simple], 
 app.post('/portadaphoto/:id', [upload.array("temp", 1), exports.isAuth.simple], async (req, res) => {
     const token = req.headers.authorization;
     let tokenString;
-    if (token) {
+    if (token && req.files.length == 1 && req.files instanceof Array) {
         tokenString = token.split(' ')[1];
         const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
-        if (payload.sub == req.params.id || payload.role == 3) {
+        if (payload.sub == req.params.id || payload.role == 3) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
             let extension = req.files[0].originalname.split(".");
-            extension = extension[extension.length - 1];
-            let pathFormed = path_1.default.join(__dirname, `../public/uploads/images/cp_${req.params.id}_portada.` + extension);
+            let strExtension = extension[extension.length - 1];
+            let pathFormed = path_1.default.join(__dirname, `../public/uploads/images/cp_${req.params.id}_portada.` + strExtension);
             fs_1.default.writeFileSync(pathFormed, req.files[0].buffer);
             return res.send({
-                path: `/uploads/images/cp_${req.params.id}_portada.` + extension,
-                originalName: `${req.params.id}_portada.` + extension
+                path: `/uploads/images/cp_${req.params.id}_portada.` + strExtension,
+                originalName: `${req.params.id}_portada.` + strExtension
             });
         }
     }
@@ -164,7 +165,7 @@ app.post('/resizephotoperfil/:id', exports.isAuth.simple, async (req, res) => {
     if (token) {
         tokenString = token.split(' ')[1];
         const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
-        if (payload.sub == req.params.id || payload.role == 3) {
+        if (payload.sub == req.params.id || payload.role == 3) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
             console.log("resize");
             resizeFoto(req, () => db_1.default.query(`UPDATE acountUser SET imagenPerfil = "/uploads/images/${req.body.originalName}"
@@ -182,7 +183,7 @@ app.post('/resizephotoportada/:id', exports.isAuth.simple, async (req, res) => {
     if (token) {
         tokenString = token.split(' ')[1];
         const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
-        if (payload.sub == req.params.id || payload.role == 3) {
+        if (payload.sub == req.params.id || payload.role == 3) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
             console.log("resize");
             resizeFoto(req, () => db_1.default.query(`UPDATE acountUser SET imagenPortada = "/uploads/images/${req.body.originalName}"

@@ -72,6 +72,25 @@ class IsAuth {
         }  
         next();
     }
+    premium(req:Request,res:Response,next:NextFunction)
+    {
+        if(!req.headers.authorization)
+        {
+            return res.status(403).send({message:"No estás autorizado"});
+        }    
+        const token = req.headers.authorization.split(' ')[1];
+        const payload = jwt.decode(token, config.apiKey);
+
+        if(payload.exp <= moment().unix())
+        {
+            return res.status(401).send({message:"El token ha expirado"});
+        }
+        if(payload.role != 'premium' || payload.role != 'admin')
+        {
+            return res.status(403).send({message:"Se requiere rol mínimo moderador"});
+        }  
+        next();
+    }
 }
 export let isAuth = new IsAuth();
 
@@ -161,19 +180,19 @@ app.post('/profilephoto/:id',[upload.array("temp",1), isAuth.simple],async (req:
     const token = req.headers.authorization;
     let tokenString:string; 
 
-    if(token){
+    if(token && req.files.length == 1 &&  req.files instanceof Array){
         tokenString= token.split(' ')[1];
         const payload = jwt.decode(tokenString, config.apiKey);
         if(payload.sub == req.params.id || payload.role == 3)
         {   // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
-            let extension = req.files[0].originalname.split(".")
-            extension = extension[extension.length-1]
-            let pathFormed = path.join(__dirname,`../public/uploads/images/cp_${req.params.id}_profile.`+extension)
+            let extension = req.files[0].originalname.split(".");
+            let strExtension = extension[extension.length-1]
+            let pathFormed = path.join(__dirname,`../public/uploads/images/cp_${req.params.id}_profile.`+strExtension)
             fs.writeFileSync(pathFormed, req.files[0].buffer);
             return res.send({
-                path:`/uploads/images/cp_${req.params.id}_profile.`+extension,
-                originalName: `${req.params.id}_profile.`+ extension
+                path:`/uploads/images/cp_${req.params.id}_profile.`+strExtension,
+                originalName: `${req.params.id}_profile.`+ strExtension
             })
         }        
     }
@@ -183,19 +202,19 @@ app.post('/portadaphoto/:id',[upload.array("temp",1), isAuth.simple],async (req:
     const token = req.headers.authorization;
     let tokenString:string; 
 
-    if(token){
+    if(token && req.files.length == 1 && req.files instanceof Array){
         tokenString= token.split(' ')[1];
         const payload = jwt.decode(tokenString, config.apiKey);
         if(payload.sub == req.params.id || payload.role == 3)
         {   // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
             let extension = req.files[0].originalname.split(".")
-            extension = extension[extension.length-1]
-            let pathFormed = path.join(__dirname,`../public/uploads/images/cp_${req.params.id}_portada.`+extension)
+            let strExtension = extension[extension.length-1]
+            let pathFormed = path.join(__dirname,`../public/uploads/images/cp_${req.params.id}_portada.`+strExtension)
             fs.writeFileSync(pathFormed, req.files[0].buffer);
             return res.send({
-                path:`/uploads/images/cp_${req.params.id}_portada.`+extension,
-                originalName: `${req.params.id}_portada.`+ extension
+                path:`/uploads/images/cp_${req.params.id}_portada.`+strExtension,
+                originalName: `${req.params.id}_portada.`+ strExtension
             })
         }        
     }
@@ -274,14 +293,15 @@ const resizeFoto = (req:Request, callb:any)=>
 app.post('/login',async (req:Request, res:Response)=> 
 {  
     let acount:acountUser[] = await db.query(`SELECT * FROM acountUser WHERE userName = ${db.escape(req.body.userName)}`);
-
+    enum roles {simple, premium, moderador, admin}
     if(acount.length == 1 && compareHash(req.body.pass+"", acount[0].contrasenia))
     {
         let token = createToken(acount[0]);
         return res.send({
             id:acount[0].id,
             razonSocial:acount[0].razonSocial,
-            token:token
+            token:token,
+            role: roles[acount[0].rol]
         });
     }
     else return res.status(403).send("no autorizado");
