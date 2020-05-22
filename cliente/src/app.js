@@ -10,6 +10,7 @@ import config from './config';
 import Login from './controllers/login';
 import Registro from './controllers/registro'; 
 import CargaCv from './controllers/cargarCv';
+import MailConfirmado from './controllers/mailConfirmado';
 
 function useForceUpdate(){
     const [value, setValue] = useState(0); // integer state
@@ -48,6 +49,10 @@ export default ()=>{
             else if(rutaSliced[0] == "registro")
             {
                 setBody(<Registro/>)
+            }
+            else if(rutaSliced[0] == "validado")
+            {
+                setBody(<MailConfirmado/>)
             }
             else if(rutaSliced[0] == "cargarcv")
             {

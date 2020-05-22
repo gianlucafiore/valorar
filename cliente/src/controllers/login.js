@@ -3,7 +3,7 @@ import {Container, Row, Form, Col, Card, Navbar, Button} from 'react-bootstrap';
 import config from '../config';
 
 const Login = (props)=>{
-    const [email,setEmail] = useState("");
+    const [userName,setUserName] = useState("");
     const [pass,setPass] = useState("");
     const [alert,setAlert] = useState("");
 
@@ -16,7 +16,7 @@ const Login = (props)=>{
                 'Content-Type': 'application/json'
             },
             body:JSON.stringify({
-                email,
+                userName,
                 pass
             })
         })
@@ -54,9 +54,9 @@ const Login = (props)=>{
                                 {alert}
                                 <form onSubmit={sendForm}>
                                     <Form.Group>
-                                        <small>Email</small>
-                                        <input onChange={e=>setEmail(e.target.value)} value={email}
-                                            required type="email" className="form form-control rounded-0"/>
+                                        <small>Nombre de usuario</small>
+                                        <input onChange={e=>setUserName(e.target.value)} value={userName}
+                                            required type="text" className="form form-control rounded-0"/>
                                     </Form.Group>
                                     <Form.Group>
                                         <small>Contraseña</small>

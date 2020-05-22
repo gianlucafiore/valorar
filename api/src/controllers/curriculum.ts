@@ -41,7 +41,7 @@ app.post("/", multer().array("cv",1),async (req:Request,res:Response)=>{
                 ${db.escape(userData.tags)},
                 ${db.escape(claveSeguridad)},
                 ${db.escape(new Date(2999,1,1))},
-                ${db.escape(new Date())}
+                ${db.escape(new Date())},
                 ${db.escape(moment().add(15,"days").toDate())}
             )
             ON DUPLICATE KEY UPDATE 
@@ -56,7 +56,7 @@ app.post("/", multer().array("cv",1),async (req:Request,res:Response)=>{
         sendMail(userData.email,`Hemos recibido tu Currículum ${!consultaEmail.length?"- CONFIRMAR INFO" :""}`, `
                 <p>Gracias por confiar en nuestro equipo, haremos todo lo posible para ayudarte en tu búsqueda
                 labroal.</p>
-                ${consultaEmail[0].fechaAlta > new Date() ? `<p><b>IMPORTANTE: Para dar de alta la información y que sea visible en la plataforma 
+                ${!consultaEmail[0]||consultaEmail[0].fechaAlta > new Date() ? `<p><b>IMPORTANTE: Para dar de alta la información y que sea visible en la plataforma 
                 <a href="${config.host}/api/curriculum/activarcv?email=${userData.email}&clave=${claveSeguridad}">Clickeá acá!</a></b></p>`:""}
                 <p><b>A continuación detallaremos la información que nos enviaste</b></p><br>                
                 <p>NOMBRE COMPLETO: ${userData.nombre}</p>
@@ -66,7 +66,7 @@ app.post("/", multer().array("cv",1),async (req:Request,res:Response)=>{
                 <br>
                 <p>Esta información será dada de baja dentro de 15 días, luego tendrás que volver a recargar tu información</p>
                 <p>Para editar esta información deberás volver a cargar todo desde el mismo 
-                    <a href="#">formulario</a>, ingresando el mismo email y adicionando la clave
+                    <a href="${config.host}/#cargarcv">formulario</a>, ingresando el mismo email y adicionando la clave
                     de seguridad que te propiciamos a continuación: <b>${claveSeguridad}</b>
                 </p>
         `)
@@ -74,6 +74,7 @@ app.post("/", multer().array("cv",1),async (req:Request,res:Response)=>{
     }
     catch(err)
     {
+        console.error(err)
         return res.status(500);
     }
 })

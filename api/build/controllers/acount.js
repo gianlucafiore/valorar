@@ -216,8 +216,7 @@ const resizeFoto = (req, callb) => {
     }
 };
 app.post('/login', async (req, res) => {
-    console.log(req.body.email);
-    let acount = await db_1.default.query(`SELECT * FROM acountUser WHERE email = ${db_1.default.escape(req.body.email)}`);
+    let acount = await db_1.default.query(`SELECT * FROM acountUser WHERE userName = ${db_1.default.escape(req.body.userName)}`);
     if (acount.length == 1 && compareHash(req.body.pass + "", acount[0].contrasenia)) {
         let token = createToken(acount[0]);
         return res.send({
@@ -275,7 +274,7 @@ app.get("/validar", async (req, res) => {
             UPDATE acountUser 
             SET claveValidacion = "",
                 fechaAlta = ${db_1.default.escape(new Date())}
-            WHERE acountUser = ${db_1.default.escape(userName)}
+            WHERE username = ${db_1.default.escape(userName)}
         `);
         return res.status(200).redirect("/#validado");
     }
