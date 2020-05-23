@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {Container, Row, Form, Col, Card, Navbar, Button} from 'react-bootstrap'; 
 import config from '../config';
 
@@ -10,6 +10,7 @@ const Registro = ()=>{
     const [rPass,setrPass] = React.useState("")
     const [rPassBorder,setrPassBorder] = React.useState({})
     const [rSocialBorder,setrSocialBorder] = React.useState({l:"", b:""})
+    const [registrado, setRegistrado] = useState(false)
     
     const submitForm = e => {
         e.preventDefault();
@@ -39,8 +40,9 @@ const Registro = ()=>{
                 }else
                 if(data.status == 200)
                 {
-                    alert("Tu cuenta se ha creado exitosamente, solo resta activarla revisando tu email")
-                    window.location = "/#login"
+                    //alert("Tu cuenta se ha creado exitosamente, solo resta activarla revisando tu email")
+                    setRegistrado(true);
+                    //window.location = "/#login"
                 }
             })
             .catch(err => console.log(err))
@@ -53,9 +55,10 @@ const Registro = ()=>{
                 <Navbar.Brand href="#home">O</Navbar.Brand>                
             </Navbar> 
             <Container>
-                <Row className="d-flex justify-content-center mt-5">
+                <Row className="d-flex justify-content-center mt-3">
                     <Col md="6">
                         <Card className="rounded-0">
+                            {!registrado ? 
                             <Card.Body >
                                 <Card.Title>
                                     Registrar nueva cuenta
@@ -63,7 +66,7 @@ const Registro = ()=>{
                                 <form onSubmit={submitForm}>
                                     <Form.Group>
                                         <label htmlFor="rsocial">* Nombre de Usuario</label>
-                                        <input required value={userName} onChange={e => setUserName(e.target.value)}
+                                        <input minLength={4} maxLength={130} required value={userName} onChange={e => setUserName(e.target.value)}
                                             id="rsocial" type="text" className={"form form-control rounded-0 "} required/>
                                         <small className="text-muted">Será necesario para acceder a tu cuenta</small>
                                         <small className="text-muted">{rSocialBorder.l}</small>
@@ -79,6 +82,7 @@ const Registro = ()=>{
                                         <input value={email} onChange={e => setEmail(e.target.value)}
                                             required type="email" id="email" className={"form form-control rounded-0 "+rSocialBorder.b}
                                             placeholder="info@ejemplo.com"/>
+                                        <small className='text-muted'>La necesitaremos para validar la cuenta</small>
                                         
                                     </Form.Group> 
                                     <Form.Group>
@@ -104,6 +108,22 @@ const Registro = ()=>{
                                     </Row>
                                 </form>                                
                             </Card.Body>
+                            :
+                            <Card.Body>
+                                <Card.Subtitle>
+                                    ¡Hemos creado tu cuenta correctamente!
+                                </Card.Subtitle>
+                                <hr></hr>
+                                <Card.Title>
+                                    Acabamos de enviar un email a:
+                                </Card.Title> 
+                                <h2>{email}</h2>
+                                <hr></hr>
+                                <small>Por favor revisá tu cuenta de correo electrónico para validar.
+                                    En caso de ser incorrecta la dirección ingresada, deberá recargar los datos para su registro en VALOR-AR
+                                </small>
+                            </Card.Body>
+                            }
                         </Card>
                     </Col>
                 </Row>

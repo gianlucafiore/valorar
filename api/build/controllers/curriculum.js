@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const app = express_1.default.Router();
+const acount_1 = require("./acount");
 const db_1 = __importDefault(require("./db"));
 const multer_1 = __importDefault(require("multer"));
 const fs_1 = __importDefault(require("fs"));
@@ -130,6 +131,14 @@ app.post("/recuperoclave", async (req, res) => {
     catch (err) {
         res.status(500);
     }
+});
+app.get("/", acount_1.isAuth.premium, async (req, res) => {
+    let cvs = db_1.default.query(`
+        SELECT nombre, email, telefono, archivo, tags, fechaAlta 
+        FROM curriculum
+        ORDER BY DESC fechaAlta
+        LIMIT 50
+    `);
 });
 exports.default = app;
 //# sourceMappingURL=curriculum.js.map

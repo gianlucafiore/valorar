@@ -10,6 +10,7 @@ import path from 'path';
 import {imageSize} from 'image-size';
 import gm0 from 'gm';
 import sendMail from './emails';
+import validator from 'validator'
 const gm = gm0.subClass({imageMagick: true});
 
 const upload = multer()
@@ -117,7 +118,7 @@ interface acountUser
 }  
 
  
-app.get('/', isAuth.simple,(req:Request,res:Response)=> {  
+app.get('/', isAuth.simple,(req:Request,res:Response)=> { 
     const token = req.headers.authorization;
     let tokenString:string;
     if(token){
@@ -292,7 +293,12 @@ const resizeFoto = (req:Request, callb:any)=>
 
 app.post('/login',async (req:Request, res:Response)=> 
 {  
-    let acount:acountUser[] = await db.query(`SELECT * FROM acountUser WHERE userName = ${db.escape(req.body.userName)}`);
+    let acount:acountUser[] = await db.query(`
+        SELECT * 
+        FROM acountUser 
+        WHERE userName = ${db.escape(req.body.userName)}
+        && fechaAlta < now()
+    `);
     enum roles {simple, premium, moderador, admin}
     if(acount.length == 1 && compareHash(req.body.pass+"", acount[0].contrasenia))
     {
@@ -310,8 +316,13 @@ app.post('/login',async (req:Request, res:Response)=>
 app.post('/registro', async (req:Request, res:Response)=>
 {
     let claveValidacion = (Math.floor(Math.random() * (10000000000 - 1000000000)) + 1000000000).toString(36);
-    let user:acountUser[] = await db.query(`SELECT * FROM acountUser WHERE userName = ${db.escape(req.body.userName)}`);
-    if(user.length == 0 && req.body.email.includes("@"))
+    let user:acountUser[] = await db.query(`
+        SELECT * 
+        FROM acountUser 
+        WHERE userName = ${db.escape(req.body.userName)}
+        && fechaAlta < now()
+    `);
+    if(user.length == 0 && validator.isEmail(req.body.email) && req.body.pass.length >= 6 && req.body.userName.length >= 4)
     {
         let data = {
             userName: req.body.userName,
@@ -331,7 +342,7 @@ app.post('/registro', async (req:Request, res:Response)=>
         sendMail(data.email, "Confirmar cuenta de VALOR-AR",`
             <p>Gracias por formar parte de nuestro equipo!</p>
             <p>Para poder comenzar a usar la cuenta deberás validarla haciendo 
-                <a href="${config.host}/api/acount/validar?user=${data.userName}&clave=${data.claveValidacion}>
+                <a href="${config.host}/api/acount/validar?user=${user.insertId}&clave=${data.claveValidacion}">
                     click acá
                 </a>
             </p>
@@ -341,26 +352,27 @@ app.post('/registro', async (req:Request, res:Response)=>
     else res.status(402).send("El email está en uso");
 })
 app.get("/validar",async (req,res)=>{
-    const userName = req.query.userName;
+    const user = req.query.user;
     const clave = req.query.clave;
 
-    let user =await db.query(`
+    let userExist =await db.query(`
         SELECT * 
         FROM acountUser 
-        WHERE userName = ${db.escape(userName)} && 
+        WHERE id = ${db.escape(user)} && 
               claveValidacion = ${db.escape(clave)}
+              && fechaAlta > now()
     `)
-    if(user.length == 0)
+    if(userExist.length == 1)
     {
         await db.query(`
             UPDATE acountUser 
             SET claveValidacion = "",
                 fechaAlta = ${db.escape(new Date())}
-            WHERE username = ${db.escape(userName)}
+            WHERE id = ${db.escape(user)}
         `)
-        return res.status(200).redirect("/#validado")
+        return res.redirect("/#validado")
     }
-    else return res.status(403);
+    else return res.sendStatus(403).send("error");
 })
 
 

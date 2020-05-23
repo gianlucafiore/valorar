@@ -68,10 +68,10 @@ const Login = (props)=>{
                                             <Button type="submit" className="rounded-0">Enviar</Button>
                                         </Col>
                                         <Col>
-                                            <a href="/#">recuperar cuenta</a>
+                                            <Button variant='link' size='sm'>recuperar cuenta</Button>
                                         </Col>
                                         <Col>
-                                            <a href="/#">registrarse</a>
+                                            <Button href='/#registro' variant='link' size='sm'>registrarse</Button>
                                         </Col>
                                     </Row>
                                 </form>

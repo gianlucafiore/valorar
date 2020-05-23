@@ -16,6 +16,7 @@ const path_1 = __importDefault(require("path"));
 const image_size_1 = require("image-size");
 const gm_1 = __importDefault(require("gm"));
 const emails_1 = __importDefault(require("./emails"));
+const validator_1 = __importDefault(require("validator"));
 const gm = gm_1.default.subClass({ imageMagick: true });
 const upload = multer_1.default();
 const app = express_1.default.Router();
@@ -56,6 +57,20 @@ class IsAuth {
             return res.status(401).send({ message: "El token ha expirado" });
         }
         if (payload.role != 'moderador' || payload.role != 'admin') {
+            return res.status(403).send({ message: "Se requiere rol mínimo moderador" });
+        }
+        next();
+    }
+    premium(req, res, next) {
+        if (!req.headers.authorization) {
+            return res.status(403).send({ message: "No estás autorizado" });
+        }
+        const token = req.headers.authorization.split(' ')[1];
+        const payload = jwt_simple_1.default.decode(token, config_1.default.apiKey);
+        if (payload.exp <= moment_1.default().unix()) {
+            return res.status(401).send({ message: "El token ha expirado" });
+        }
+        if (payload.role != 'premium' || payload.role != 'admin') {
             return res.status(403).send({ message: "Se requiere rol mínimo moderador" });
         }
         next();
@@ -217,13 +232,26 @@ const resizeFoto = (req, callb) => {
     }
 };
 app.post('/login', async (req, res) => {
-    let acount = await db_1.default.query(`SELECT * FROM acountUser WHERE userName = ${db_1.default.escape(req.body.userName)}`);
+    let acount = await db_1.default.query(`
+        SELECT * 
+        FROM acountUser 
+        WHERE userName = ${db_1.default.escape(req.body.userName)}
+        && fechaAlta < now()
+    `);
+    let roles;
+    (function (roles) {
+        roles[roles["simple"] = 0] = "simple";
+        roles[roles["premium"] = 1] = "premium";
+        roles[roles["moderador"] = 2] = "moderador";
+        roles[roles["admin"] = 3] = "admin";
+    })(roles || (roles = {}));
     if (acount.length == 1 && compareHash(req.body.pass + "", acount[0].contrasenia)) {
         let token = createToken(acount[0]);
         return res.send({
             id: acount[0].id,
             razonSocial: acount[0].razonSocial,
-            token: token
+            token: token,
+            role: roles[acount[0].rol]
         });
     }
     else
@@ -231,8 +259,13 @@ app.post('/login', async (req, res) => {
 });
 app.post('/registro', async (req, res) => {
     let claveValidacion = (Math.floor(Math.random() * (10000000000 - 1000000000)) + 1000000000).toString(36);
-    let user = await db_1.default.query(`SELECT * FROM acountUser WHERE userName = ${db_1.default.escape(req.body.userName)}`);
-    if (user.length == 0 && req.body.email.includes("@")) {
+    let user = await db_1.default.query(`
+        SELECT * 
+        FROM acountUser 
+        WHERE userName = ${db_1.default.escape(req.body.userName)}
+        && fechaAlta < now()
+    `);
+    if (user.length == 0 && validator_1.default.isEmail(req.body.email) && req.body.pass.length >= 6 && req.body.userName.length >= 4) {
         let data = {
             userName: req.body.userName,
             razonSocial: req.body.razonSocial,
@@ -251,7 +284,7 @@ app.post('/registro', async (req, res) => {
         emails_1.default(data.email, "Confirmar cuenta de VALOR-AR", `
             <p>Gracias por formar parte de nuestro equipo!</p>
             <p>Para poder comenzar a usar la cuenta deberás validarla haciendo 
-                <a href="${config_1.default.host}/api/acount/validar?user=${data.userName}&clave=${data.claveValidacion}>
+                <a href="${config_1.default.host}/api/acount/validar?user=${user.insertId}&clave=${data.claveValidacion}">
                     click acá
                 </a>
             </p>
@@ -262,25 +295,26 @@ app.post('/registro', async (req, res) => {
         res.status(402).send("El email está en uso");
 });
 app.get("/validar", async (req, res) => {
-    const userName = req.query.userName;
+    const user = req.query.user;
     const clave = req.query.clave;
-    let user = await db_1.default.query(`
+    let userExist = await db_1.default.query(`
         SELECT * 
         FROM acountUser 
-        WHERE userName = ${db_1.default.escape(userName)} && 
+        WHERE id = ${db_1.default.escape(user)} && 
               claveValidacion = ${db_1.default.escape(clave)}
+              && fechaAlta > now()
     `);
-    if (user.length == 0) {
+    if (userExist.length == 1) {
         await db_1.default.query(`
             UPDATE acountUser 
             SET claveValidacion = "",
                 fechaAlta = ${db_1.default.escape(new Date())}
-            WHERE username = ${db_1.default.escape(userName)}
+            WHERE id = ${db_1.default.escape(user)}
         `);
-        return res.status(200).redirect("/#validado");
+        return res.redirect("/#validado");
     }
     else
-        return res.status(403);
+        return res.sendStatus(403).send("error");
 });
 function createToken(user) {
     const payload = {
