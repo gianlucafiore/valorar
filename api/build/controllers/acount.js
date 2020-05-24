@@ -182,11 +182,26 @@ app.post('/resizephotoperfil/:id', exports.isAuth.simple, async (req, res) => {
         const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
         if (payload.sub == req.params.id || payload.role == 3) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
-            console.log("resize");
-            resizeFoto(req, () => db_1.default.query(`UPDATE acountUser SET imagenPerfil = "/uploads/images/${req.body.originalName}"
-                        WHERE id = ${Number(req.params.id)}
-            `)
-                .then(() => res.send(200)));
+            resizeFoto(req, async () => {
+                let user = await db_1.default.query(`
+                    SELECT * 
+                    FROM acountUser
+                    WHERE id = ${db_1.default.escape(req.params.id)}
+                `);
+                //console.log(path.join(__dirname,`../public/${user[0].imagenPerfil}`))
+                if (user[0].imagenPerfil) {
+                    try {
+                        fs_1.default.unlinkSync(path_1.default.join(__dirname, `../public/${user[0].imagenPerfil}`));
+                    }
+                    catch (err) { }
+                }
+                await db_1.default.query(`
+                    UPDATE acountUser 
+                    SET imagenPerfil = "/uploads/images/${req.body.originalName}"
+                            WHERE id = ${Number(req.params.id)}
+                `)
+                    .then(() => res.send(200));
+            });
         }
     }
     else
@@ -199,12 +214,24 @@ app.post('/resizephotoportada/:id', exports.isAuth.simple, async (req, res) => {
         tokenString = token.split(' ')[1];
         const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
         if (payload.sub == req.params.id || payload.role == 3) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
-            // PUEDE EDITAR
-            console.log("resize");
-            resizeFoto(req, () => db_1.default.query(`UPDATE acountUser SET imagenPortada = "/uploads/images/${req.body.originalName}"
-                        WHERE id = ${Number(req.params.id)}
-            `)
-                .then(() => res.send(200)));
+            // PUEDE EDITAR 
+            resizeFoto(req, async () => {
+                let user = await db_1.default.query(`
+                    SELECT * 
+                    FROM acountUser
+                    WHERE id = ${db_1.default.escape(req.params.id)}
+                `);
+                if (user[0].imagenPortada) {
+                    try {
+                        fs_1.default.unlinkSync(path_1.default.join(__dirname, `../public/${user[0].imagenPortada}`));
+                    }
+                    catch (err) { }
+                }
+                db_1.default.query(`UPDATE acountUser SET imagenPortada = "/uploads/images/${req.body.originalName}"
+                            WHERE id = ${Number(req.params.id)}
+                `)
+                    .then(() => res.send(200));
+            });
         }
     }
     else
@@ -227,7 +254,11 @@ const resizeFoto = (req, callb) => {
         };
         gm(cprutaArchivo)
             .crop(redimentions.width, redimentions.height, redimentions.left, redimentions.top)
-            .write(rutaArchivo, err => console.error(err));
+            .write(rutaArchivo, (err) => {
+            if (err)
+                console.error(err);
+            fs_1.default.unlinkSync(cprutaArchivo);
+        });
         return callb();
     }
 };
@@ -315,6 +346,73 @@ app.get("/validar", async (req, res) => {
     }
     else
         return res.sendStatus(403).send("error");
+});
+app.post("/solicitarrecupero", async (req, res) => {
+    let userName = req.query.userName;
+    let user = await db_1.default.query(`
+        SELECT * 
+        FROM acountUser
+        WHERE userName = ${db_1.default.escape(userName)}
+        && fechaAlta < now()
+    `);
+    if (user.length) {
+        const claveValidacion = (Math.floor(Math.random() * (10000000000 - 1000000000)) + 1000000000).toString(36);
+        await db_1.default.query(`
+            UPDATE acountUser 
+            SET claveValidacion = ${db_1.default.escape(claveValidacion)} 
+            WHERE id = ${db_1.default.escape(user[0].id)}
+        `);
+        emails_1.default(user[0].email, "Has solicitado el recupero de contraseña en VALOR-AR", `
+            <h4>Para generar una nueva contraseña ingresá al siguiente 
+            <a href="${config_1.default.host}/#rescuepass/${user[0].id}/${claveValidacion}">LINK</a>"
+            </h4>
+        `);
+        let emailSplited = user[0].email.split("@");
+        let email = emailSplited[0].slice(0, 2) + "*****@" + emailSplited[1];
+        return res.send({ email });
+    }
+});
+app.post("/cambiarclaverecupero", async (req, res) => {
+    const userId = req.query.id;
+    const claveValidacion = req.query.clave;
+    const newPass = req.body.newPass;
+    const user = await db_1.default.query(`
+        SELECT id 
+        FROM acountUser
+        WHERE id = ${db_1.default.escape(userId)}
+        && fechaAlta < now()
+        && claveValidacion = ${db_1.default.escape(claveValidacion)}
+    `);
+    if (user.length) {
+        await db_1.default.query(`
+            UPDATE acountUser 
+            SET claveValidacion = "",
+            contrasenia = ${db_1.default.escape(genHash(newPass))}
+            WHERE id = ${db_1.default.escape(userId)}
+        `);
+        return res.send("ok");
+    }
+    else
+        return res.status(403);
+});
+app.post("/cambiarclave/:id", exports.isAuth.simple, async (req, res) => {
+    const token = req.headers.authorization;
+    let tokenString;
+    if (token && req.body.pass.length >= 6) {
+        tokenString = token.split(' ')[1];
+        const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
+        if (payload.sub == req.params.id || payload.role == 3) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
+            // PUEDE EDITAR
+            await db_1.default.query(`
+                UPDATE acountUser 
+                SET contrasenia = ${db_1.default.escape(genHash(req.body.pass))}
+                WHERE id = ${db_1.default.escape(req.params.id)}
+            `);
+            return res.send("ok");
+        }
+    }
+    else
+        res.status(500).send("Not Authenticated");
 });
 function createToken(user) {
     const payload = {

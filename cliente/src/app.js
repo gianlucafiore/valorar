@@ -1,17 +1,18 @@
 import React, { useState, useEffect, forceUpdate } from 'react'; 
 import {Button, Navbar, Nav, NavDropdown, Form, FormControl, Container, Row, Col} from 'react-bootstrap';
-import Perfil from './controllers/perfil';
+import Perfil from './controllers/acount/perfil';
 import Home from './controllers/home';
 import './generalStyle.css'
 import {FaHandsHelping, FaRegBuilding, FaRegAddressCard, FaRegQuestionCircle, FaUserTie} from 'react-icons/fa';
 import {IoMdNotificationsOutline, IoIosLogOut} from 'react-icons/io'
 import logoSitio from './logos/Marca-03.png'
 import config from './config';
-import Login from './controllers/login';
-import Registro from './controllers/registro'; 
-import CargaCv from './controllers/cargarCv';
-import MailConfirmado from './controllers/mailConfirmado';
-import VerCvs from './controllers/verCvs';
+import Login from './controllers/acount/login';
+import Registro from './controllers/acount/registro'; 
+import CargaCv from './controllers/curriculum/cargarCv';
+import MailConfirmado from './controllers/acount/mailConfirmado';
+import VerCvs from './controllers/curriculum/verCvs';
+import CambiarPassRecupero from './controllers/acount/cambiarPassRecupero';
 
 function useForceUpdate(){
     const [value, setValue] = useState(0); // integer state
@@ -46,6 +47,10 @@ export default ()=>{
             else if(rutaSliced[0] == "login")
             {
                 setBody(<Login/>)
+            }
+            else if(rutaSliced[0] == "rescuepass")
+            {
+                setBody(<CambiarPassRecupero userId={rutaSliced[1]} clave={rutaSliced[2]}/>)
             }
             else if(rutaSliced[0] == "registro")
             {

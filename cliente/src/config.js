@@ -1,4 +1,4 @@
-let config = {};
+let config = {url:""};
 
 config = process.env.NODE_ENV === "production" ?
     {

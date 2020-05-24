@@ -4,7 +4,7 @@ import Jodit from 'jodit-react';
 import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
-import config from '../config'; 
+import config from '../../config'; 
 
 const Perfil = (props)=>{
     const [editar, toggleEditar] = useState(false)
@@ -99,6 +99,7 @@ const Perfil = (props)=>{
                                 {/* <Button className="mr-3 rounded-0" variant='outline-primary' size='sm'>Cambiar foto de portada</Button> */}
                                 <ModalFotoPerfil idUser={user.id}></ModalFotoPerfil>
                                 <ModalFotoPortada idUser={user.id}></ModalFotoPortada>
+                                <FormCambioContrasenia userId={user.id}/>
                             </React.Fragment>
                             )
                             : <Button onClick={guardar}
@@ -161,7 +162,7 @@ const Perfil = (props)=>{
                                 </Row> <br></br>
                                 <Row> 
                                     <Col>
-                                        {!editar ? <a className="btn btn-info btn-sm rounded-0" href={sitioWeb}>Sitio Web oficial</a> : 
+                                        {!editar ? <a className="btn btn-info btn-sm rounded-0" target='blank_' href={sitioWeb}>Sitio Web oficial</a> : 
                                             <Form.Group>
                                                 <label>Sitio Web</label>
                                                 <input className="form-control-sm form-control" value={sitioWeb} onChange={e => setSitioWeb(e.target.value)}/>
@@ -371,3 +372,67 @@ function ModalFotoPortada(props) {
         </>
     );
 }
+
+function FormCambioContrasenia(props) {
+    const [show, setShow] = useState(false);
+  
+    const handleClose = () => setShow(false); 
+    const [pass, setPass] = useState("");
+    const [rptPass, setRptPass] = useState("");
+    const [border, setBorder] = useState({b:"",m:""});
+
+    const guardar = e=>{
+        if(!pass || !rptPass || pass.length <6 || rptPass.length < 6 || pass != rptPass)
+        { 
+            return setBorder({b:"border-danger",m:"Las contraseñas deben contener un mínimo de 6 caracteres, y deben coincidir"})
+        }
+        
+        fetch(config.url+"/api/acount/cambiarclave/"+props.userId,{
+            method:"post",
+            headers:{
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                Authorization:localStorage.session
+            },
+            body:JSON.stringify({
+                pass
+            })
+        })
+        .then(data => {
+            if(data.status == 200)
+            {
+                handleClose()
+            }
+        })
+    }
+
+    return (
+      <> 
+        <Button onClick={() => setShow(true)} className="mr-3 rounded-0" variant='outline-primary' size='sm'>Cambiar contraseña</Button>
+  
+        <Form onSubmit={guardar}>
+            <Modal show={show} onHide={handleClose}>
+                    <Modal.Body>
+                        <Form.Group>
+                            <label>Nueva Contraseña</label>
+                            <Form.Control type='password' className={border.b} required onChange={e => setPass(e.target.value)} value={pass}/>
+                        </Form.Group>
+                        <Form.Group>
+                            <label>Repetir Contraseña</label>
+                            <Form.Control type='password' className={border.b} required onChange={e => setRptPass(e.target.value)} value={rptPass}/>
+                        </Form.Group>
+                        {border.b ? <label className='text-danger'>{border.m}</label> : null}
+                    </Modal.Body>
+            <Modal.Footer>
+                <Button className='rounded-0' variant="secondary" onClick={handleClose}>
+                    Cerrar
+                </Button>
+                <Button className='rounded-0' variant="primary" onClick={guardar}>
+                    Guardar
+                </Button>
+            </Modal.Footer>
+            </Modal>
+        </Form>
+      </>
+    );
+  } 

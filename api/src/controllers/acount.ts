@@ -232,12 +232,26 @@ app.post('/resizephotoperfil/:id',isAuth.simple,async (req:Request,res:Response)
         if(payload.sub == req.params.id || payload.role == 3)
         {   // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
-            console.log("resize")
-            resizeFoto(req,()=>
-            db.query(`UPDATE acountUser SET imagenPerfil = "/uploads/images/${req.body.originalName}"
-                        WHERE id = ${Number(req.params.id)}
-            `)
-            .then(()=> res.send(200)))
+            resizeFoto(req,async()=>{                
+                let user =  await db.query(`
+                    SELECT * 
+                    FROM acountUser
+                    WHERE id = ${db.escape(req.params.id)}
+                `);
+                //console.log(path.join(__dirname,`../public/${user[0].imagenPerfil}`))
+                
+                if(user[0].imagenPerfil){
+                    try{
+                        fs.unlinkSync(path.join(__dirname,`../public/${user[0].imagenPerfil}`))
+                    }catch(err){}
+                }
+                await db.query(`
+                    UPDATE acountUser 
+                    SET imagenPerfil = "/uploads/images/${req.body.originalName}"
+                            WHERE id = ${Number(req.params.id)}
+                `)
+                .then(()=> res.send(200))
+            })
         }        
     }
     else res.status(500).send("Not Authenticated");
@@ -251,13 +265,23 @@ app.post('/resizephotoportada/:id',isAuth.simple,async (req:Request,res:Response
         const payload = jwt.decode(tokenString, config.apiKey);
         if(payload.sub == req.params.id || payload.role == 3)
         {   // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
-            // PUEDE EDITAR
-            console.log("resize")
-            resizeFoto(req,()=>
-            db.query(`UPDATE acountUser SET imagenPortada = "/uploads/images/${req.body.originalName}"
-                        WHERE id = ${Number(req.params.id)}
-            `)
-            .then(()=> res.send(200)))
+            // PUEDE EDITAR 
+            resizeFoto(req, async()=>{
+                let user =  await db.query(`
+                    SELECT * 
+                    FROM acountUser
+                    WHERE id = ${db.escape(req.params.id)}
+                `);
+                if(user[0].imagenPortada){
+                    try{
+                        fs.unlinkSync(path.join(__dirname,`../public/${user[0].imagenPortada}`))
+                    }catch(err){}
+                }
+                db.query(`UPDATE acountUser SET imagenPortada = "/uploads/images/${req.body.originalName}"
+                            WHERE id = ${Number(req.params.id)}
+                `)
+                .then(()=> res.send(200))
+            })
         }        
     }
     else res.status(500).send("Not Authenticated");
@@ -281,11 +305,13 @@ const resizeFoto = (req:Request, callb:any)=>
             top:~~(dimensions.height * parseInt(req.body.crop.y) /100)
         }              
         
-        gm
-        (cprutaArchivo)
+        gm(cprutaArchivo)
         .crop(redimentions.width, redimentions.height, redimentions.left, redimentions.top)
-        .write(rutaArchivo,err => console.error(err));
-
+        .write(rutaArchivo,(err) => {
+            if(err)
+                console.error(err)
+            fs.unlinkSync(cprutaArchivo);
+        });
         return callb();
     }
 }
@@ -373,6 +399,78 @@ app.get("/validar",async (req,res)=>{
         return res.redirect("/#validado")
     }
     else return res.sendStatus(403).send("error");
+})
+
+app.post("/solicitarrecupero",async(req,res)=>{
+    let userName = req.query.userName;
+    let user = await db.query(`
+        SELECT * 
+        FROM acountUser
+        WHERE userName = ${db.escape(userName)}
+        && fechaAlta < now()
+    `)
+    if(user.length)
+    {
+        const claveValidacion = (Math.floor(Math.random() * (10000000000 - 1000000000)) + 1000000000).toString(36)
+        await db.query(`
+            UPDATE acountUser 
+            SET claveValidacion = ${db.escape(claveValidacion)} 
+            WHERE id = ${db.escape(user[0].id)}
+        `)
+        sendMail(user[0].email,"Has solicitado el recupero de contraseña en VALOR-AR",`
+            <h4>Para generar una nueva contraseña ingresá al siguiente 
+            <a href="${config.host}/#rescuepass/${user[0].id}/${claveValidacion}">LINK</a>"
+            </h4>
+        `)
+        let emailSplited = user[0].email.split("@");
+        let email = emailSplited[0].slice(0,2)+"*****@"+emailSplited[1]
+        return res.send({email})
+    }
+    
+})
+app.post("/cambiarclaverecupero",async(req,res)=>{
+    const userId = req.query.id;
+    const claveValidacion = req.query.clave;
+    const newPass = req.body.newPass;
+
+    const user = await db.query(`
+        SELECT id 
+        FROM acountUser
+        WHERE id = ${db.escape(userId)}
+        && fechaAlta < now()
+        && claveValidacion = ${db.escape(claveValidacion)}
+    `)
+    if(user.length)
+    {
+        await db.query(`
+            UPDATE acountUser 
+            SET claveValidacion = "",
+            contrasenia = ${db.escape(genHash(newPass))}
+            WHERE id = ${db.escape(userId)}
+        `)
+        return res.send("ok");
+    }
+    else return res.status(403);    
+})
+app.post("/cambiarclave/:id",isAuth.simple,async(req,res)=>{
+    const token = req.headers.authorization;
+    let tokenString:string; 
+
+    if(token && req.body.pass.length >= 6){
+        tokenString= token.split(' ')[1];
+        const payload = jwt.decode(tokenString, config.apiKey);
+        if(payload.sub == req.params.id || payload.role == 3)
+        {   // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
+            // PUEDE EDITAR
+            await db.query(`
+                UPDATE acountUser 
+                SET contrasenia = ${db.escape(genHash(req.body.pass))}
+                WHERE id = ${db.escape(req.params.id)}
+            `)
+            return res.send("ok")
+        }        
+    }
+    else res.status(500).send("Not Authenticated");
 })
 
 

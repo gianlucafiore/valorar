@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import {Container, Row, Form, Col, Card, Navbar, Button} from 'react-bootstrap'; 
-import config from '../config';
+import {Container, Row, Form, Col, Card, Navbar, Button, Modal} from 'react-bootstrap'; 
+import config from '../../config';
 
 const Login = (props)=>{
     const [userName,setUserName] = useState("");
@@ -68,7 +68,7 @@ const Login = (props)=>{
                                             <Button type="submit" className="rounded-0">Enviar</Button>
                                         </Col>
                                         <Col>
-                                            <Button variant='link' size='sm'>recuperar cuenta</Button>
+                                            <RecuperarCuenta/>
                                         </Col>
                                         <Col>
                                             <Button href='/#registro' variant='link' size='sm'>registrarse</Button>
@@ -82,6 +82,57 @@ const Login = (props)=>{
                 </Row>
             </Container>
         </div>
+    )
+}
+
+const RecuperarCuenta = ()=>{
+    const [show, setShow] = useState(false);
+    const [userName, setUserName] = useState("");
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
+    const [enviado, setEnviado] = useState(false);
+
+    const solicitarRecupero = e=>{
+        e.preventDefault();
+        fetch(config.url+"/api/acount/solicitarrecupero?userName="+userName,{
+            method:"post"
+        })
+        .then(data =>{
+            if(data.status == 200)
+            {
+                setEnviado(true)
+                return data.json()
+            }
+        }).then(data => setUserName(data.email))
+    }
+
+    return(
+        <React.Fragment>
+            <Button variant='link' onClick={handleShow} size='sm'>recuperar cuenta</Button>
+            <Modal show={show} onHide={handleClose}>
+                <Modal.Body>
+                    {
+                        !enviado ? <React.Fragment>
+                        <Modal.Title>Ingresar nombre de usuario</Modal.Title>
+                            <Form.Control  onChange={e=> setUserName(e.target.value)}/>
+                            <small>Te enviaremos un email para el recupero de contraseña a la dirección asociada con este usuario</small>
+                        </React.Fragment>
+                        :
+                        <Modal.Title>
+                            Hemos enviado un email a una dirección similar a {userName}
+                        </Modal.Title>
+                    }
+                </Modal.Body>
+                <Modal.Footer>
+                <Button variant="secondary" onClick={handleClose}>
+                    Cerrar
+                </Button>
+                <Button variant="primary" onClick={solicitarRecupero}>
+                    Enviar
+                </Button>
+                </Modal.Footer>
+            </Modal>
+        </React.Fragment>
     )
 }
 

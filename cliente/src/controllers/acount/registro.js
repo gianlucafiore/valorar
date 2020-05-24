@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {Container, Row, Form, Col, Card, Navbar, Button} from 'react-bootstrap'; 
-import config from '../config';
+import config from '../../config';
 
 const Registro = ()=>{
     const [razonSocial,setRazonSocial] = React.useState("")

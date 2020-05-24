@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Card, Navbar, Button, Form, Badge, Modal } from 'react-bootstrap';
-import config from '../config'
+import config from '../../config'
 const CargaCv = () => {
     const [nombre, setNombre] = useState("");
     const [telefono, setTelefono] = useState("");
