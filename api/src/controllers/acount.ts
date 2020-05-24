@@ -238,8 +238,6 @@ app.post('/resizephotoperfil/:id',isAuth.simple,async (req:Request,res:Response)
                     FROM acountUser
                     WHERE id = ${db.escape(req.params.id)}
                 `);
-                //console.log(path.join(__dirname,`../public/${user[0].imagenPerfil}`))
-                
                 if(user[0].imagenPerfil){
                     try{
                         fs.unlinkSync(path.join(__dirname,`../public/${user[0].imagenPerfil}`))
