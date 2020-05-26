@@ -3,6 +3,7 @@ import { Container, Col, Row, Card, Button, Image, Form, ButtonGroup, Badge, Mod
 import Jodit from 'jodit-react';
 import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
+import {FaPlus} from 'react-icons/fa'
 
 import config from '../../config'; 
 
@@ -11,9 +12,9 @@ const Perfil = (props)=>{
     const [user, setUser] = useState({id:"",razonSocial:"",rol:""});
     const [descripcion,setDescripcion] = useState("");
     const [razonSocial, setRazonSocial] = useState("");
-    const [estrellas, setEstrellas] = useState(0);
-    const [seguidores, setSeguidores] = useState(0);
-    const [reputacion, setReputacion] = useState(0);
+    //const [estrellas, setEstrellas] = useState(0);
+    const [vinculos, setVinculos] = useState(0);
+    //const [reputacion, setReputacion] = useState(0);
     const [visitas, setVisitas] = useState(0);
     const [telefono, setTelefono] = useState("");
     const [email, setEmail] = useState("");
@@ -21,6 +22,9 @@ const Perfil = (props)=>{
     const [titulo, setTitulo] = useState(""); 
     const [slogan, setSlogan] = useState(""); 
     const [sitioWeb, setSitioWeb] = useState(""); 
+    const [direccion, setDireccion] = useState(""); 
+    const [seguido, setSeguido] = useState(""); 
+    const [propietario, setPropietario] = useState(""); 
 
 
     useEffect(()=>{ 
@@ -36,10 +40,9 @@ const Perfil = (props)=>{
             .then(d =>  {
                 setUser(d)
                 setDescripcion(d.descripcion ? d.descripcion : "")
-                setRazonSocial(d.razonSocial)
-                setEstrellas(d.estrellas)
-                setSeguidores(d.seguidores)
-                setReputacion(d.reputacion)
+                setRazonSocial(d.razonSocial) 
+                setVinculos(d.seguidores)
+                setDireccion(d.direccionLocalidad)
                 setVisitas(d.visitas)
                 setTelefono(d.telefono)
                 setEmail(d.email)
@@ -47,6 +50,8 @@ const Perfil = (props)=>{
                 setTitulo(d.titulo ? d.titulo : "")
                 setSlogan(d.slogan ? d.slogan : "")
                 setSitioWeb(d.sitioWeb ? d.sitioWeb : "")
+                setSeguido(d.seguido)
+                setPropietario(d.propietario)
             }) 
         })  
     })
@@ -67,7 +72,9 @@ const Perfil = (props)=>{
                 telefono,
                 email,
                 sitioWeb,
-                descripcion
+                descripcion,
+                tags,
+                direccion
             })
         })
         .then(data => {
@@ -76,6 +83,35 @@ const Perfil = (props)=>{
             }
             else
                 console.log(data)
+        })
+    }
+
+    const seguir = ()=>{
+
+        fetch(config.url+"/api/acount/seguir/"+user.id,{
+            method:"post",
+            headers:{
+                Authorization:localStorage.session
+            }
+        })
+        .then(data => {
+            if(data.status == 200){
+                setSeguido(true)
+            }
+        })
+    }
+    const dejarSeguir = ()=>{
+        
+        fetch(config.url+"/api/acount/seguir/"+user.id,{
+            method:"delete",
+            headers:{
+                Authorization:localStorage.session
+            }
+        })
+        .then(data => {
+            if(data.status == 200){
+                setSeguido(false)
+            }
         })
     }
     
@@ -112,8 +148,11 @@ const Perfil = (props)=>{
                         <Card className='rounded-0' style={{borderTop:"solid 3px #184ca1"}}> 
                             <Card.Body style={{textAlign:"center"}}>
                                 <img
+                                    className='rounded-circle'
                                     width="33%" 
-                                    src={config.url+user.imagenPerfil} />
+                                    src={config.url+user.imagenPerfil} 
+                                />
+                                
                                 {
                                     !editar ? 
                                     <h5>{razonSocial}</h5> : 
@@ -122,22 +161,26 @@ const Perfil = (props)=>{
                                         <input className="form-control-sm form-control" value={razonSocial} onChange={e => setRazonSocial(e.target.value)}/>
                                     </Form.Group>
                                 }
-                                {(()=>{
-                                    let estrellasHtml = "";
-                                    for(let i = 0; i<estrellas; i++)
-                                    {
-                                        estrellasHtml+="⭐";
-                                    }
-                                    return <div>{estrellasHtml}</div>
-                                })()}
+                                {
+                                    !propietario && !seguido ? <>
+                                        <br/>
+                                        <Button onClick={seguir}
+                                            className='rounded-0' variant='success' size='sm'>
+                                           <FaPlus></FaPlus> Agregar a mis proveedores</Button></>
+                                    : !propietario && seguido ?
+                                    <>
+                                        <br/>
+                                        <Button onClick={dejarSeguir}
+                                            className='rounded-0' variant='danger' size='sm'>
+                                            Quitar de mis proveedores</Button></>
+                                        :null
+                                } 
                                 <hr/>
                                 <Row>
                                     <Col>
-                                        <h3>{seguidores}</h3>Seguidores
+                                        <h3>{vinculos}</h3>Seguidores
                                     </Col>
                                     <Col>
-                                        <h3>{reputacion}</h3>Reputación
-                                    </Col><Col>
                                         <h3>{visitas}</h3>Visitas
                                     </Col> 
                                 </Row> 
@@ -160,6 +203,15 @@ const Perfil = (props)=>{
                                     </Form.Group>}
                                     </Col>  
                                 </Row> <br></br>
+                                <Row>
+                                    <Col>
+                                    {!editar ? direccion : 
+                                    <Form.Group>
+                                    <label>Dirección y localidad</label>
+                                    <input className="form-control-sm form-control" value={direccion} onChange={e => setDireccion(e.target.value)}/>
+                                    </Form.Group>}
+                                    </Col>  
+                                </Row> <br></br>
                                 <Row> 
                                     <Col>
                                         {!editar ? <a className="btn btn-info btn-sm rounded-0" target='blank_' href={sitioWeb}>Sitio Web oficial</a> : 
@@ -173,8 +225,14 @@ const Perfil = (props)=>{
                                 <hr></hr>
                                 <Row>
                                     <Col>
-                                        {
-                                            tags.split(",").map(t => <Badge key={t} className="mr-2" variant="secondary">{t}</Badge>)
+                                        {!editar?
+                                            tags.split(",").map(t => <Badge key={t} className="mr-2" variant="secondary">{t.trim()}</Badge>)
+                                            :
+                                            <Form.Group>
+                                                <label>Palabras clave separadas por comas ,</label>
+                                                <input className="form-control-sm form-control" value={tags} onChange={e => setTags(e.target.value)}/>
+                                                <small className='text-danger'>Super importante para que te encuentren en las búsquedas</small>
+                                            </Form.Group>
                                         } 
                                     </Col>
                                 </Row>

@@ -135,18 +135,65 @@ app.get('/', isAuth.simple,(req:Request,res:Response)=> {
 app.get('/profile/:id',async (req:Request,res:Response)=> {  
     const token = req.headers.authorization;
     let tokenString:string;
-    let user = await db.query(`SELECT * FROM acountUser WHERE id = ${Number(req.params.id)}`)
+    let user = await db.query(`SELECT * FROM acountUser WHERE id = ${Number(req.params.id)}`);
     if(token != undefined && token.includes("Bearer ")){
         tokenString= token.split(' ')[1];
         const payload = jwt.decode(tokenString, config.apiKey);
-
+        
+        let userSeguido = await db.query(`
+            SELECT * 
+            FROM carteraProveedores 
+            WHERE acountSeguido = ${db.escape(req.params.id)}
+            && acountSeguidor = ${db.escape(payload.sub)}`
+        )
         if(payload.sub == req.params.id || payload.role == 3)
         {   // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
                user[0].canEdit = true;
         }
-    }
+        if(payload.sub == req.params.id)
+            user[0].propietario = true;
+        if(userSeguido.length == 1)
+            user[0].seguido = true
+    } 
     return res.status(200).send(user[0]);    
+})
+app.post("/seguir/:id", async(req,res)=>{
+    const token = req.headers.authorization;
+    let tokenString:string;
+    if(token){
+        tokenString= token.split(' ')[1];
+        const payload = jwt.decode(tokenString, config.apiKey);
+        if(payload.sub != req.params.id )
+        {   // SI EL USUARIO SOLICITANTE NO ES EL PROPIETARIO DE ESTE PERFIL
+            // PUEDE SEGUIR
+            let query = await db.query(`
+                INSERT INTO carteraProveedores (acountSeguido, acountSeguidor)
+                            VALUES(${db.escape(req.params.id)}, ${payload.sub})
+            `) 
+            return res.send(200)
+        }        
+    }
+    else res.status(500).send("Not Authenticated");
+})
+app.delete("/seguir/:id", async(req,res)=>{
+    const token = req.headers.authorization;
+    let tokenString:string;
+    if(token){
+        tokenString= token.split(' ')[1];
+        const payload = jwt.decode(tokenString, config.apiKey);
+        if(payload.sub != req.params.id )
+        {   // SI EL USUARIO SOLICITANTE NO ES EL PROPIETARIO DE ESTE PERFIL
+            // PUEDE DEJAR DE SEGUIR
+            let query = await db.query(`
+                DELETE FROM carteraProveedores WHERE 
+                    acountSeguido = ${db.escape(req.params.id)} &&
+                    acountSeguidor = ${payload.sub}
+            `) 
+            return res.send(200)
+        }        
+    }
+    else res.status(500).send("Not Authenticated");
 })
 
 app.put('/profile/:id', isAuth.simple,async (req:Request,res:Response)=> {  
@@ -166,7 +213,9 @@ app.put('/profile/:id', isAuth.simple,async (req:Request,res:Response)=> {
                     telefono = ${db.escape(req.body.telefono)},
                     email = ${db.escape(req.body.email)},
                     sitioWeb = ${db.escape(req.body.sitioWeb)},
-                    descripcion = ${db.escape(req.body.descripcion)}
+                    descripcion = ${db.escape(req.body.descripcion)},
+                    direccionLocalidad = ${db.escape(req.body.direccion)},
+                    tags = ${db.escape(req.body.tags)}
                 WHERE id = ${Number(req.params.id)}
             `)
                console.log(req.body)

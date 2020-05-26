@@ -99,12 +99,58 @@ app.get('/profile/:id', async (req, res) => {
     if (token != undefined && token.includes("Bearer ")) {
         tokenString = token.split(' ')[1];
         const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
+        let userSeguido = await db_1.default.query(`
+            SELECT * 
+            FROM carteraProveedores 
+            WHERE acountSeguido = ${db_1.default.escape(req.params.id)}
+            && acountSeguidor = ${db_1.default.escape(payload.sub)}`);
         if (payload.sub == req.params.id || payload.role == 3) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
             user[0].canEdit = true;
         }
+        if (payload.sub == req.params.id)
+            user[0].propietario = true;
+        if (userSeguido.length == 1)
+            user[0].seguido = true;
     }
     return res.status(200).send(user[0]);
+});
+app.post("/seguir/:id", async (req, res) => {
+    const token = req.headers.authorization;
+    let tokenString;
+    if (token) {
+        tokenString = token.split(' ')[1];
+        const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
+        if (payload.sub != req.params.id) { // SI EL USUARIO SOLICITANTE NO ES EL PROPIETARIO DE ESTE PERFIL
+            // PUEDE SEGUIR
+            let query = await db_1.default.query(`
+                INSERT INTO carteraProveedores (acountSeguido, acountSeguidor)
+                            VALUES(${db_1.default.escape(req.params.id)}, ${payload.sub})
+            `);
+            return res.send(200);
+        }
+    }
+    else
+        res.status(500).send("Not Authenticated");
+});
+app.delete("/seguir/:id", async (req, res) => {
+    const token = req.headers.authorization;
+    let tokenString;
+    if (token) {
+        tokenString = token.split(' ')[1];
+        const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
+        if (payload.sub != req.params.id) { // SI EL USUARIO SOLICITANTE NO ES EL PROPIETARIO DE ESTE PERFIL
+            // PUEDE DEJAR DE SEGUIR
+            let query = await db_1.default.query(`
+                DELETE FROM carteraProveedores WHERE 
+                    acountSeguido = ${db_1.default.escape(req.params.id)} &&
+                    acountSeguidor = ${payload.sub}
+            `);
+            return res.send(200);
+        }
+    }
+    else
+        res.status(500).send("Not Authenticated");
 });
 app.put('/profile/:id', exports.isAuth.simple, async (req, res) => {
     const token = req.headers.authorization;
@@ -122,7 +168,9 @@ app.put('/profile/:id', exports.isAuth.simple, async (req, res) => {
                     telefono = ${db_1.default.escape(req.body.telefono)},
                     email = ${db_1.default.escape(req.body.email)},
                     sitioWeb = ${db_1.default.escape(req.body.sitioWeb)},
-                    descripcion = ${db_1.default.escape(req.body.descripcion)}
+                    descripcion = ${db_1.default.escape(req.body.descripcion)},
+                    direccionLocalidad = ${db_1.default.escape(req.body.direccion)},
+                    tags = ${db_1.default.escape(req.body.tags)}
                 WHERE id = ${Number(req.params.id)}
             `);
             console.log(req.body);
@@ -188,7 +236,6 @@ app.post('/resizephotoperfil/:id', exports.isAuth.simple, async (req, res) => {
                     FROM acountUser
                     WHERE id = ${db_1.default.escape(req.params.id)}
                 `);
-                //console.log(path.join(__dirname,`../public/${user[0].imagenPerfil}`))
                 if (user[0].imagenPerfil) {
                     try {
                         fs_1.default.unlinkSync(path_1.default.join(__dirname, `../public/${user[0].imagenPerfil}`));
