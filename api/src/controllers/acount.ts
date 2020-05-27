@@ -172,11 +172,13 @@ app.get('/profile/:id',async (req:Request,res:Response)=> {
             WHERE acountSeguido = ${db.escape(req.params.id)}
             && acountSeguidor = ${db.escape(payload.sub)}`
         )
-        if(payload.sub == req.params.id || payload.role == 3)
+        if((payload.sub == req.params.id || payload.role == 3) && new Date(new Date().getTime() + payload.iat) > new Date())
         {   // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
                user[0].canEdit = true;
         }
+        if(new Date(new Date().getTime() + payload.iat) > new Date())
+            user[0].canFollow = true
         if(payload.sub == req.params.id)
             user[0].propietario = true;
         if(vinculos.filter(v => v.acountSeguidor == Number(payload.sub)).length == 1)
@@ -184,7 +186,7 @@ app.get('/profile/:id',async (req:Request,res:Response)=> {
     } 
     return res.status(200).send(user[0]);    
 })
-app.post("/seguir/:id", async(req,res)=>{
+app.post("/seguir/:id", isAuth.simple, async(req,res)=>{
     const token = req.headers.authorization;
     let tokenString:string;
     if(token){
@@ -202,7 +204,7 @@ app.post("/seguir/:id", async(req,res)=>{
     }
     else res.status(500).send("Not Authenticated");
 })
-app.delete("/seguir/:id", async(req,res)=>{
+app.delete("/seguir/:id",isAuth.simple, async(req,res)=>{
     const token = req.headers.authorization;
     let tokenString:string;
     if(token){

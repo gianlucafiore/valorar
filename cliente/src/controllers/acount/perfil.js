@@ -12,7 +12,7 @@ const Perfil = (props)=>{
     const [user, setUser] = useState({id:"",razonSocial:"",rol:""});
     const [descripcion,setDescripcion] = useState("");
     const [razonSocial, setRazonSocial] = useState("");
-    //const [estrellas, setEstrellas] = useState(0);
+    const [canFollow, setCanFollow] = useState(false);
     const [vinculos, setVinculos] = useState(0);
     //const [reputacion, setReputacion] = useState(0);
     const [visitas, setVisitas] = useState(0);
@@ -23,7 +23,7 @@ const Perfil = (props)=>{
     const [slogan, setSlogan] = useState(""); 
     const [sitioWeb, setSitioWeb] = useState(""); 
     const [direccion, setDireccion] = useState(""); 
-    const [seguido, setSeguido] = useState(""); 
+    const [seguido, setSeguido] = useState(true); 
     const [propietario, setPropietario] = useState(""); 
 
 
@@ -52,6 +52,7 @@ const Perfil = (props)=>{
                 setSitioWeb(d.sitioWeb ? d.sitioWeb : "")
                 setSeguido(d.seguido)
                 setPropietario(d.propietario)
+                setCanFollow(d.canFollow)
             }) 
         })  
     })
@@ -151,8 +152,7 @@ const Perfil = (props)=>{
                                     className='rounded-circle'
                                     width="33%" 
                                     src={config.url+user.imagenPerfil} 
-                                />
-                                
+                                /> 
                                 {
                                     !editar ? 
                                     <h5>{razonSocial}</h5> : 
@@ -162,17 +162,20 @@ const Perfil = (props)=>{
                                     </Form.Group>
                                 }
                                 {
-                                    !propietario && !seguido ? <>
-                                        <br/>
-                                        <Button onClick={seguir}
-                                            className='rounded-0' variant='success' size='sm'>
-                                           <FaPlus></FaPlus> Agregar a mis proveedores</Button></>
-                                    : !propietario && seguido ?
-                                    <>
-                                        <br/>
-                                        <Button onClick={dejarSeguir}
-                                            className='rounded-0' variant='danger' size='sm'>
-                                            Quitar de mis proveedores</Button></>
+                                    !propietario && !seguido && canFollow ? 
+                                        <>
+                                            <br/>
+                                            <Button onClick={seguir}
+                                                className='rounded-0' variant='success' size='sm'>
+                                            <FaPlus></FaPlus> Agregar a mis proveedores</Button>
+                                        </>
+                                    : !propietario && seguido && canFollow ?
+                                        <>
+                                            <br/>
+                                            <Button onClick={dejarSeguir}
+                                                className='rounded-0' variant='danger' size='sm'>
+                                                Quitar de mis proveedores</Button>
+                                        </>
                                         :null
                                 } 
                                 <hr/>
