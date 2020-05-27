@@ -136,6 +136,32 @@ app.get('/profile/:id',async (req:Request,res:Response)=> {
     const token = req.headers.authorization;
     let tokenString:string;
     let user = await db.query(`SELECT * FROM acountUser WHERE id = ${Number(req.params.id)}`);
+    interface AcountSeguidor{acountSeguidor:number}
+    const vinculos:AcountSeguidor[] = await db.query(`
+                                    SELECT acountSeguidor
+                                    FROM carteraProveedores
+                                    WHERE acountSeguido = ${db.escape(req.params.id)}`)
+    user[0].vinculos = vinculos.length
+    const insertVisita = await db.query(`
+        INSERT INTO visitasPerfil(ip, perfil)
+        SELECT ${db.escape(req.ip)},${db.escape(req.params.id)}
+        FROM dual
+        WHERE NOT EXISTS (
+            SELECT * 
+            FROM visitasPerfil 
+            WHERE ip = ${db.escape(req.ip)}
+                && perfil = ${db.escape(req.params.id)}    
+                && (fecha + INTERVAL 1 DAY) > NOW() 
+        )
+    `)
+    interface v{total:number}
+    const visitas:v[] =await db.query(`
+        SELECT COUNT(id) as total 
+        FROM visitasPerfil 
+        WHERE perfil = ${db.escape(req.params.id)}`)
+    user[0].visitas = visitas[0].total
+    
+
     if(token != undefined && token.includes("Bearer ")){
         tokenString= token.split(' ')[1];
         const payload = jwt.decode(tokenString, config.apiKey);
@@ -153,7 +179,7 @@ app.get('/profile/:id',async (req:Request,res:Response)=> {
         }
         if(payload.sub == req.params.id)
             user[0].propietario = true;
-        if(userSeguido.length == 1)
+        if(vinculos.filter(v => v.acountSeguidor == Number(payload.sub)).length == 1)
             user[0].seguido = true
     } 
     return res.status(200).send(user[0]);    

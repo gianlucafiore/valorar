@@ -41,7 +41,7 @@ const Perfil = (props)=>{
                 setUser(d)
                 setDescripcion(d.descripcion ? d.descripcion : "")
                 setRazonSocial(d.razonSocial) 
-                setVinculos(d.seguidores)
+                setVinculos(d.vinculos)
                 setDireccion(d.direccionLocalidad)
                 setVisitas(d.visitas)
                 setTelefono(d.telefono)
@@ -178,7 +178,7 @@ const Perfil = (props)=>{
                                 <hr/>
                                 <Row>
                                     <Col>
-                                        <h3>{vinculos}</h3>Seguidores
+                                        <h3>{vinculos}</h3>Vínculos Creados
                                     </Col>
                                     <Col>
                                         <h3>{visitas}</h3>Visitas
