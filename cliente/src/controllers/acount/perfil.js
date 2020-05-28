@@ -25,6 +25,7 @@ const Perfil = (props)=>{
     const [direccion, setDireccion] = useState(""); 
     const [seguido, setSeguido] = useState(true); 
     const [propietario, setPropietario] = useState(""); 
+    const [profesion, setProfesion] = useState(""); 
 
 
     useEffect(()=>{ 
@@ -53,6 +54,7 @@ const Perfil = (props)=>{
                 setSeguido(d.seguido)
                 setPropietario(d.propietario)
                 setCanFollow(d.canFollow)
+                setProfesion(d.profesion)
             }) 
         })  
     })
@@ -159,6 +161,14 @@ const Perfil = (props)=>{
                                     <Form.Group>
                                         <label>Razón Social</label>
                                         <input className="form-control-sm form-control" value={razonSocial} onChange={e => setRazonSocial(e.target.value)}/>
+                                    </Form.Group>
+                                }
+                                {
+                                    !editar ? 
+                                    <small>{profesion}</small> : 
+                                    <Form.Group>
+                                        {profesion? <label>Profesion</label>: null}
+                                        <input className="form-control-sm form-control" value={profesion} onChange={e => setProfesion(e.target.value)}/>
                                     </Form.Group>
                                 }
                                 {
