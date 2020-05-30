@@ -194,7 +194,8 @@ app.put('/profile/:id', exports.isAuth.simple, async (req, res) => {
                     sitioWeb = ${db_1.default.escape(req.body.sitioWeb)},
                     descripcion = ${db_1.default.escape(req.body.descripcion)},
                     direccionLocalidad = ${db_1.default.escape(req.body.direccion)},
-                    tags = ${db_1.default.escape(req.body.tags)}
+                    tags = ${db_1.default.escape(req.body.tags)},
+                    profesion = ${db_1.default.escape(req.body.profesion)}
                 WHERE id = ${Number(req.params.id)}
             `);
             console.log(req.body);

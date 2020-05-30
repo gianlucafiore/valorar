@@ -14,6 +14,7 @@ import MailConfirmado from './controllers/acount/mailConfirmado';
 import VerCvs from './controllers/curriculum/verCvs';
 import CambiarPassRecupero from './controllers/acount/cambiarPassRecupero';
 import Autonomos from './controllers/acount/autonomos';
+import Info from './controllers/info';
 
 function useForceUpdate(){
     const [value, setValue] = useState(0); // integer state
@@ -53,6 +54,10 @@ export default ()=>{
             {
                 setBody(<CambiarPassRecupero userId={rutaSliced[1]} clave={rutaSliced[2]}/>)
             }
+            else if(rutaSliced[0] == "info")
+            {
+                setBody(<Info/>)
+            }
             else if(rutaSliced[0] == "autonomos")
             {
                 setBody(<Autonomos/>)
@@ -77,6 +82,10 @@ export default ()=>{
             {
                 setBody(<Perfil/>)
             } 
+            else if(rutaSliced[0] == "info" && !isNaN(rutaSliced[1]))
+            {
+                setBody(<Info/>)
+            }
         }
         window.addEventListener("hashchange", retBody)
         window.addEventListener("load", retBody)

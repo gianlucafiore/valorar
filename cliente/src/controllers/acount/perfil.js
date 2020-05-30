@@ -165,8 +165,8 @@ const Perfil = (props)=>{
                                     </Form.Group>
                                 }
                                 {
-                                    !editar ? 
-                                    <small>{profesion}</small> : 
+                                    !editar ?
+                                    <small>{profesion}</small> :
                                     <Form.Group>
                                         <label>Profesion (Opcional)</label>
                                         <input className="form-control-sm form-control" value={profesion} onChange={e => setProfesion(e.target.value)}/>
