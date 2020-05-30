@@ -15,6 +15,7 @@ import VerCvs from './controllers/curriculum/verCvs';
 import CambiarPassRecupero from './controllers/acount/cambiarPassRecupero';
 import Autonomos from './controllers/acount/autonomos';
 import Info from './controllers/info';
+import Empresas from './controllers/acount/empresas';
 
 function useForceUpdate(){
     const [value, setValue] = useState(0); // integer state
@@ -61,6 +62,10 @@ export default ()=>{
             else if(rutaSliced[0] == "autonomos")
             {
                 setBody(<Autonomos/>)
+            }
+            else if(rutaSliced[0] == "empresas")
+            {
+                setBody(<Empresas/>)
             }
             else if(rutaSliced[0] == "registro")
             {
