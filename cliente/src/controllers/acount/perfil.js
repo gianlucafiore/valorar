@@ -77,7 +77,8 @@ const Perfil = (props)=>{
                 sitioWeb,
                 descripcion,
                 tags,
-                direccion
+                direccion,
+                profesion
             })
         })
         .then(data => {
@@ -167,7 +168,7 @@ const Perfil = (props)=>{
                                     !editar ? 
                                     <small>{profesion}</small> : 
                                     <Form.Group>
-                                        {profesion? <label>Profesion</label>: null}
+                                        <label>Profesion (Opcional)</label>
                                         <input className="form-control-sm form-control" value={profesion} onChange={e => setProfesion(e.target.value)}/>
                                     </Form.Group>
                                 }
