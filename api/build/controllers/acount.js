@@ -485,6 +485,26 @@ app.post("/cambiarclave/:id", exports.isAuth.simple, async (req, res) => {
     else
         res.status(500).send("Not Authenticated");
 });
+app.get("/empresas", async (req, res) => {
+    let empresas = await db_1.default.query(`
+        SELECT id, razonSocial, titulo, imagenPerfil 
+        FROM acountUser        
+        WHERE fechaAlta < now() 
+        && fechaBaja > now()
+        && tipo = 2
+    `);
+    return res.send(empresas);
+});
+app.get("/autonomos", async (req, res) => {
+    let autonomos = await db_1.default.query(`
+        SELECT id, razonSocial, titulo, imagenPerfil 
+        FROM acountUser        
+        WHERE fechaAlta < now() 
+        && fechaBaja > now()
+        && tipo = 1
+    `);
+    return res.send(autonomos);
+});
 function createToken(user) {
     const payload = {
         sub: user.id,

@@ -243,7 +243,8 @@ app.put('/profile/:id', isAuth.simple,async (req:Request,res:Response)=> {
                     sitioWeb = ${db.escape(req.body.sitioWeb)},
                     descripcion = ${db.escape(req.body.descripcion)},
                     direccionLocalidad = ${db.escape(req.body.direccion)},
-                    tags = ${db.escape(req.body.tags)}
+                    tags = ${db.escape(req.body.tags)},
+                    profesion = ${db.escape(req.body.profesion)}
                 WHERE id = ${Number(req.params.id)}
             `)
                console.log(req.body)
@@ -548,6 +549,26 @@ app.post("/cambiarclave/:id",isAuth.simple,async(req,res)=>{
     else res.status(500).send("Not Authenticated");
 })
 
+app.get("/empresas",async (req,res)=>{
+    let empresas = await db.query(`
+        SELECT id, razonSocial, titulo, imagenPerfil 
+        FROM acountUser        
+        WHERE fechaAlta < now() 
+        && fechaBaja > now()
+        && tipo = 2
+    `)
+    return res.send(empresas);
+})
+app.get("/autonomos",async (req,res)=>{
+    let autonomos:[] = await db.query(`
+        SELECT id, razonSocial, titulo, imagenPerfil 
+        FROM acountUser        
+        WHERE fechaAlta < now() 
+        && fechaBaja > now()
+        && tipo = 1
+    `)
+    return res.send(autonomos);
+})
 
 
 function createToken(user:acountUser)
