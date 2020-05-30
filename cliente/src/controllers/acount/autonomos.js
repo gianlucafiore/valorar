@@ -15,7 +15,7 @@ const Autonomos = ()=>{
                 {
                     data.slice(i*12,i*12+12).map((item,indx)=>
                         <Col key={indx+"col"} xs='4' sm='3' lg="2" style={{textAlign:"center"}}>
-                            <a href='/#'>
+                            <a href={'/#profile/'+item.id}>
                                 <img width='70px' className='rounded-circle' src={item.imagenPerfil} />
                                 <br></br>
                                 <small>{item.razonSocial}</small>
