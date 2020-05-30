@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Navbar } from 'react-bootstrap';
 import config from '../../config'
 
-const Autonomos = ()=>{
+const Empresas = ()=>{
     const [lista, setLista] = useState([])
     useEffect(()=>{
         fetch(config.url+'/api/acount/empresas')
@@ -39,7 +39,7 @@ const Autonomos = ()=>{
                     <Col>
                         <Card>
                             <Card.Body>
-                                <Card.Title>Autónomos</Card.Title>
+                                <Card.Title>Empresas</Card.Title>
                                 <hr></hr>
                                 {
                                     lista
@@ -53,4 +53,4 @@ const Autonomos = ()=>{
     )
 }
 
-export default Autonomos;
+export default Empresas;

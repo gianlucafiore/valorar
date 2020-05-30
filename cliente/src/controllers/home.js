@@ -10,7 +10,7 @@ const Home = ()=>{
             <Container>
                 <Row className="pt-3">
                     <Col md="9">
-                        <Row className="pb-3">
+                        {/* <Row className="pb-3">
                             <Col md="12">
                                 <Card style={{borderTop:"solid 3px #2461b2"}} className="rounded-0">
                                     <Card.Body>
@@ -21,10 +21,11 @@ const Home = ()=>{
                                     </Card.Body>
                                 </Card>
                             </Col>                         
-                        </Row>
+                        </Row> */}
                         <Row className="pb-3">
                             <Col>
-                                <Card className="rounded-0">
+                                {/* <Card className="rounded-0"> */}
+                                <Card style={{borderTop:"solid 3px #2461b2"}} className="rounded-0">
                                     <Card.Body>
                                         <Form>
                                             <FormGroup>
