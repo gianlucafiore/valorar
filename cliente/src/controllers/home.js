@@ -53,7 +53,7 @@ const Home = ()=>{
                         {d.titulo}
                     </Col>
                     <Col sm='2' className='d-flex justify-content-end'>
-                        <Button variant='outline-primary' size='sm' className='rounded-0'>Ver perfil</Button>
+                        <Button href={'/#profile/'+d.id} variant='outline-primary' size='sm' className='rounded-0'>Ver perfil</Button>
                     </Col>
                 </Row> 
                 <hr></hr>
