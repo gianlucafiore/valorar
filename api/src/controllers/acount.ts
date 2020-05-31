@@ -173,7 +173,7 @@ app.get('/profile/:id',async (req:Request,res:Response)=> {
             WHERE acountSeguido = ${db.escape(req.params.id)}
             && acountSeguidor = ${db.escape(payload.sub)}`
         )
-        if((payload.sub == req.params.id || payload.role == 3) && new Date(new Date().getTime() + payload.iat) > new Date())
+        if((payload.sub == req.params.id || payload.rol == 3) && new Date(new Date().getTime() + payload.iat) > new Date())
         {   // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
                user[0].canEdit = true;
@@ -231,7 +231,7 @@ app.put('/profile/:id', isAuth.simple,async (req:Request,res:Response)=> {
     if(token){
         tokenString= token.split(' ')[1];
         const payload = jwt.decode(tokenString, config.apiKey);
-        if(payload.sub == req.params.id || payload.role == 3)
+        if(payload.sub == req.params.id || payload.rol == 3)
         {   // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
             let query = await db.query(`
@@ -263,7 +263,7 @@ app.post('/profilephoto/:id',[upload.array("temp",1), isAuth.simple],async (req:
     if(token && req.files.length == 1 &&  req.files instanceof Array){
         tokenString= token.split(' ')[1];
         const payload = jwt.decode(tokenString, config.apiKey);
-        if(payload.sub == req.params.id || payload.role == 3)
+        if(payload.sub == req.params.id || payload.rol == 3)
         {   // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
             let extension = req.files[0].originalname.split(".");
@@ -285,7 +285,7 @@ app.post('/portadaphoto/:id',[upload.array("temp",1), isAuth.simple],async (req:
     if(token && req.files.length == 1 && req.files instanceof Array){
         tokenString= token.split(' ')[1];
         const payload = jwt.decode(tokenString, config.apiKey);
-        if(payload.sub == req.params.id || payload.role == 3)
+        if(payload.sub == req.params.id || payload.rol == 3)
         {   // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
             let extension = req.files[0].originalname.split(".")
@@ -308,7 +308,7 @@ app.post('/resizephotoperfil/:id',isAuth.simple,async (req:Request,res:Response)
     if(token){
         tokenString= token.split(' ')[1];
         const payload = jwt.decode(tokenString, config.apiKey);
-        if(payload.sub == req.params.id || payload.role == 3)
+        if(payload.sub == req.params.id || payload.rol == 3)
         {   // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
             resizeFoto(req,async()=>{                
@@ -340,7 +340,7 @@ app.post('/resizephotoportada/:id',isAuth.simple,async (req:Request,res:Response
     if(token){
         tokenString= token.split(' ')[1];
         const payload = jwt.decode(tokenString, config.apiKey);
-        if(payload.sub == req.params.id || payload.role == 3)
+        if(payload.sub == req.params.id || payload.rol == 3)
         {   // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR 
             resizeFoto(req, async()=>{
@@ -539,7 +539,7 @@ app.post("/cambiarclave/:id",isAuth.simple,async(req,res)=>{
     if(token && req.body.pass.length >= 6){
         tokenString= token.split(' ')[1];
         const payload = jwt.decode(tokenString, config.apiKey);
-        if(payload.sub == req.params.id || payload.role == 3)
+        if(payload.sub == req.params.id || payload.rol == 3)
         {   // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
             await db.query(`

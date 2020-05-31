@@ -126,7 +126,7 @@ app.get('/profile/:id', async (req, res) => {
             FROM carteraProveedores 
             WHERE acountSeguido = ${db_1.default.escape(req.params.id)}
             && acountSeguidor = ${db_1.default.escape(payload.sub)}`);
-        if ((payload.sub == req.params.id || payload.role == 3) && new Date(new Date().getTime() + payload.iat) > new Date()) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
+        if ((payload.sub == req.params.id || payload.rol == 3) && new Date(new Date().getTime() + payload.iat) > new Date()) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
             user[0].canEdit = true;
         }
@@ -182,7 +182,7 @@ app.put('/profile/:id', exports.isAuth.simple, async (req, res) => {
     if (token) {
         tokenString = token.split(' ')[1];
         const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
-        if (payload.sub == req.params.id || payload.role == 3) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
+        if (payload.sub == req.params.id || payload.rol == 3) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
             let query = await db_1.default.query(`
                 UPDATE acountUser SET
@@ -211,7 +211,7 @@ app.post('/profilephoto/:id', [upload.array("temp", 1), exports.isAuth.simple], 
     if (token && req.files.length == 1 && req.files instanceof Array) {
         tokenString = token.split(' ')[1];
         const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
-        if (payload.sub == req.params.id || payload.role == 3) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
+        if (payload.sub == req.params.id || payload.rol == 3) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
             let extension = req.files[0].originalname.split(".");
             let strExtension = extension[extension.length - 1];
@@ -232,7 +232,7 @@ app.post('/portadaphoto/:id', [upload.array("temp", 1), exports.isAuth.simple], 
     if (token && req.files.length == 1 && req.files instanceof Array) {
         tokenString = token.split(' ')[1];
         const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
-        if (payload.sub == req.params.id || payload.role == 3) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
+        if (payload.sub == req.params.id || payload.rol == 3) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
             let extension = req.files[0].originalname.split(".");
             let strExtension = extension[extension.length - 1];
@@ -253,7 +253,7 @@ app.post('/resizephotoperfil/:id', exports.isAuth.simple, async (req, res) => {
     if (token) {
         tokenString = token.split(' ')[1];
         const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
-        if (payload.sub == req.params.id || payload.role == 3) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
+        if (payload.sub == req.params.id || payload.rol == 3) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
             resizeFoto(req, async () => {
                 let user = await db_1.default.query(`
@@ -285,7 +285,7 @@ app.post('/resizephotoportada/:id', exports.isAuth.simple, async (req, res) => {
     if (token) {
         tokenString = token.split(' ')[1];
         const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
-        if (payload.sub == req.params.id || payload.role == 3) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
+        if (payload.sub == req.params.id || payload.rol == 3) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR 
             resizeFoto(req, async () => {
                 let user = await db_1.default.query(`
@@ -475,7 +475,7 @@ app.post("/cambiarclave/:id", exports.isAuth.simple, async (req, res) => {
     if (token && req.body.pass.length >= 6) {
         tokenString = token.split(' ')[1];
         const payload = jwt_simple_1.default.decode(tokenString, config_1.default.apiKey);
-        if (payload.sub == req.params.id || payload.role == 3) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
+        if (payload.sub == req.params.id || payload.rol == 3) { // SI EL USUARIO SOLICITANTE ES EL PROPIETARIO DE ESTE PERFIL O SI ES ADMINISTRADOR
             // PUEDE EDITAR
             await db_1.default.query(`
                 UPDATE acountUser 
