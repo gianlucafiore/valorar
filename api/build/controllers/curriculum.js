@@ -60,7 +60,7 @@ app.post("/", multer_1.default().array("cv", 1), async (req, res) => {
             return res.status(403).send("no se proporcionó una clave de seguridad o la misma es errónea");
         }
         if (consultaEmail.length > 0 && req.query.key == consultaEmail[0].claveSeguridad) {
-            fs_1.default.unlinkSync(path_1.default.join(__dirname, "../private/" + consultaEmail[0].archivo));
+            fs_1.default.unlinkSync(path_1.default.join(__dirname, "../private/uploads/cv/" + consultaEmail[0].archivo));
             claveSeguridad = req.query.key.toString();
         }
         fs_1.default.writeFileSync(pathToWrite, cvBuffer);
@@ -90,7 +90,7 @@ app.post("/", multer_1.default().array("cv", 1), async (req, res) => {
                 <p>Gracias por confiar en nuestro equipo, haremos todo lo posible para ayudarte en tu búsqueda
                 labroal.</p>
                 ${!consultaEmail[0] || consultaEmail[0].fechaAlta > new Date() ? `<p><b>IMPORTANTE: Para dar de alta la información y que sea visible en la plataforma 
-                <a href="${config_1.default.host}/api/curriculum/activarcv?email=${userData.email}&clave=${claveSeguridad}">Clickeá acá!</a></b></p>` : ""}
+                <a href="https://valor-ar.com.ar/api/curriculum/activarcv?email=${userData.email}&clave=${claveSeguridad}">Clickeá acá!</a></b></p>` : ""}
                 <p><b>A continuación detallaremos la información que nos enviaste</b></p><br>                
                 <p>NOMBRE COMPLETO: ${userData.nombre}</p>
                 <p>TELEFONO: ${userData.telefono}</p>
@@ -99,7 +99,7 @@ app.post("/", multer_1.default().array("cv", 1), async (req, res) => {
                 <br>
                 <p>Esta información será dada de baja dentro de 15 días, luego tendrás que volver a recargar tu información</p>
                 <p>Para editar esta información deberás volver a cargar todo desde el mismo 
-                    <a href="${config_1.default.host}/#cargarcv">formulario</a>, ingresando el mismo email y adicionando la clave
+                    <a href="https://valor-ar.com.ar/#cargarcv">formulario</a>, ingresando el mismo email y adicionando la clave
                     de seguridad que te propiciamos a continuación: <b>${claveSeguridad}</b>
                 </p>
         `);
