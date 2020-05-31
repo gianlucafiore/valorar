@@ -10,7 +10,7 @@ app.get("/", async(req,res)=>{
             return ` tags LIKE ${db.escape("%"+s.trim()+"%")} `
         }).join("||")
         let perfiles = await db.query(`
-            SELECT razonSocial, titulo, imagenPerfil, tipo
+            SELECT id, razonSocial, titulo, imagenPerfil, tipo
             FROM acountUser
             WHERE fechaAlta < NOW() && fechaBaja > NOW() &&
                 ${terminos}
