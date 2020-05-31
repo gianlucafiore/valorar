@@ -1,50 +1,69 @@
 import React, { useEffect, useState } from 'react';
-import {Container, Row, Card, Table, Col, Navbar, Form} from 'react-bootstrap';
+import {Container, Row, Card, Table, Col, Navbar, Form, FormControl, InputGroup, Button, Badge} from 'react-bootstrap';
 import DataTable from 'react-data-table-component';
+import config from '../../config'
+import {FaSearch} from 'react-icons/fa'
 
 const columnas = [
     {
         name:"Nombre Completo",
         selector: "nombre"
     },
-    {
-        name:"Teléfono",
-        selector: "telefono"
-    },
+    // {
+    //     name:"Teléfono",
+    //     selector: "telefono"
+    // },
     {
         name:"Email",
         selector: "email"
     },
     {
-        name:"Palabras clave",
+        name:"Tags",
         selector: "tags"
-    },
-    {
-        name:"Fecha Alta",
-        selector: "fechaAlta"
     },
     {
         name:"Archivo Cv",
         selector: "archivo"
     }    
 ]
-
-const getData = ()=>{
-    return [{
-        nombre:"gian",
-        telefono:"123123123", 
-        email:"gian@gmail.com",
-        tags:"perro",
-        fechaAlta:"01/01/10",
-        archivo:<a href='/#'>Ver CV</a>,
-    }]
-}
-
+ 
 const VerCvs = ()=>{
     const [data,setData] = useState([])
+    const [search,setSearch] = useState([])
     useEffect(()=>{
-        setData(getData())
+        fetch(config.url+"/api/curriculum",{
+            headers:{
+                Authorization:localStorage.session
+            }
+        })
+        .then(data => data.json())
+        .then(data => {
+            data = data.map(d => {
+                d.archivo = <a target='_blank' href={"/api/curriculum/"+d.archivo}>Ver CV</a>
+                d.tags = d.tags.split(",").map(t => <Badge key={t} variant='primary' className='mr-1'>{t.trim()}</Badge>)
+                return d;
+            })
+            setData(data)
+        })
     },[])
+    const buscar = e=>{
+        e.preventDefault()
+        fetch(config.url+"/api/curriculum/buscar?search="+search,{
+            headers:{
+                Authorization:localStorage.session
+            }
+        })
+        .then(data => data.json())
+        .then(data => {
+            data = data.map(d => {
+                d.archivo = <a target='_blank' href={"/api/curriculum/"+d.archivo}>Ver CV</a>
+                d.tags = d.tags.split(",").map(t => <Badge key={t} variant='primary' className='mr-1'>{t.trim()}</Badge>)
+                return d;
+            })
+            setData(data)
+        })
+    }
+
     return(
         <React.Fragment>
             <Navbar bg="dark" expand="lg" variant="dark" className="mb-2">
@@ -58,7 +77,23 @@ const VerCvs = ()=>{
                                 <Card.Title>Currículums ingresados</Card.Title>
                                 <hr></hr>
                                 <label htmlFor='search'>Ingresar palabras clave para la búsqueda</label>
-                                <Form.Control id='search' type='search'/>
+                                <form>
+                                    <InputGroup className="mb-3">
+                                        <FormControl
+                                            placeholder='ingeniero, mecanico, desarrollador'
+                                            type='search'
+                                            id='search' 
+                                            className='rounded-0'
+                                            value={search}
+                                            onChange={e => setSearch(e.target.value)}
+                                        />
+                                        <InputGroup.Append>
+                                            <Button onClick={buscar} onSubmit={buscar}
+                                            type='submit'
+                                            variant="outline-secondary" className='rounded-0'><FaSearch/> Buscar</Button>
+                                        </InputGroup.Append>
+                                    </InputGroup>
+                                </form>
                                 <DataTable 
                                     columns={columnas}
                                     theme='solarized'

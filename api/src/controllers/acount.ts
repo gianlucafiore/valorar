@@ -86,7 +86,7 @@ class IsAuth {
         {
             return res.status(401).send({message:"El token ha expirado"});
         }
-        if(payload.role != 'premium' || payload.role != 'admin')
+        if(payload.role != 'premium' && payload.role != 'moderador' && payload.role != 'admin')
         {
             return res.status(403).send({message:"Se requiere rol mínimo moderador"});
         }  
@@ -115,6 +115,7 @@ interface acountUser
     fechaAlta:Date
     fechaBaja:Date
     rol:number
+    role:string
 }  
 
  
@@ -127,7 +128,7 @@ app.get('/', isAuth.simple,(req:Request,res:Response)=> {
         return res.status(200).send({
             id:payload.sub,
             nombre:payload.name,
-            rol:payload.role
+            rol:payload.rol
         });
     }
     else res.status(500).send("Not Authenticated");
@@ -404,12 +405,15 @@ app.post('/login',async (req:Request, res:Response)=>
     enum roles {simple, premium, moderador, admin}
     if(acount.length == 1 && compareHash(req.body.pass+"", acount[0].contrasenia))
     {
+        acount[0].role = roles[acount[0].rol]
         let token = createToken(acount[0]);
+        
         return res.send({
             id:acount[0].id,
             razonSocial:acount[0].razonSocial,
             token:token,
-            role: roles[acount[0].rol]
+            role: roles[acount[0].rol],
+            rol: acount[0].rol
         });
     }
     else return res.status(403).send("no autorizado");
@@ -575,7 +579,8 @@ function createToken(user:acountUser)
 {
     const payload = {
         sub: user.id,
-        role: user.rol,
+        role: user.role,
+        rol: user.rol,
         name:user.razonSocial,
         iat: moment().unix(),
         exp: moment().add(14,'days').unix()

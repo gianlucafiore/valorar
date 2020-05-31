@@ -10,6 +10,34 @@ import sendMail from './emails';
 import config from '../config';
 import moment from 'moment';
 
+app.get("/", isAuth.premium ,async (req,res)=>{
+    let cvs = await db.query(`
+        SELECT nombre, email, telefono, archivo, tags, fechaAlta 
+        FROM curriculum
+        WHERE fechaAlta < NOW() && fechaBaja > NOW()
+        ORDER BY  fechaAlta DESC
+        LIMIT 50
+    `)
+    return res.send(cvs);
+})
+
+app.get("/buscar", isAuth.premium ,async (req,res)=>{
+    let terminos:string;
+    if(typeof req.query.search == "string"){
+        terminos = req.query.search.split(",").map(s => {
+            return ` tags LIKE ${db.escape("%"+s.trim()+"%")} `
+        }).join("||")
+        let cvs = await db.query(`
+            SELECT nombre, email, telefono, archivo, tags, fechaAlta 
+            FROM curriculum
+            WHERE fechaAlta < NOW() && fechaBaja > NOW() &&
+                ${terminos}
+            ORDER BY fechaAlta DESC
+        `)
+        return res.send(cvs);
+    }
+})
+
 app.post("/", multer().array("cv",1),async (req:Request,res:Response)=>{
     let cv;
     let cvBuffer;
@@ -44,7 +72,7 @@ app.post("/", multer().array("cv",1),async (req:Request,res:Response)=>{
                 ${db.escape(userData.nombre)},
                 ${db.escape(userData.email)},
                 ${db.escape(userData.telefono)},
-                ${db.escape("/uploads/cv/"+pathId)},
+                ${db.escape(pathId)},
                 ${db.escape(userData.tags)},
                 ${db.escape(claveSeguridad)},
                 ${db.escape(new Date(2999,1,1))},
@@ -54,7 +82,7 @@ app.post("/", multer().array("cv",1),async (req:Request,res:Response)=>{
             ON DUPLICATE KEY UPDATE 
                 nombre = ${db.escape(userData.nombre)},
                 telefono = ${db.escape(userData.telefono)},
-                archivo = ${db.escape("/uploads/cv/"+pathId)},
+                archivo = ${db.escape(pathId)},
                 tags = ${db.escape(userData.tags)},
                 claveSeguridad= ${db.escape(claveSeguridad)},
                 fechaBaja = ${db.escape(moment().add(15,"days").toDate())}
@@ -142,14 +170,8 @@ app.post("/recuperoclave",async (req,res)=>{
     }
 })
 
-app.get("/", isAuth.premium ,async (req,res)=>{
-    let cvs = db.query(`
-        SELECT nombre, email, telefono, archivo, tags, fechaAlta 
-        FROM curriculum
-        ORDER BY DESC fechaAlta
-        LIMIT 50
-    `)
-})
+
+
 
 
 

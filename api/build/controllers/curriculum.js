@@ -14,6 +14,32 @@ const crypto_1 = __importDefault(require("crypto"));
 const emails_1 = __importDefault(require("./emails"));
 const config_1 = __importDefault(require("../config"));
 const moment_1 = __importDefault(require("moment"));
+app.get("/", acount_1.isAuth.premium, async (req, res) => {
+    let cvs = await db_1.default.query(`
+        SELECT nombre, email, telefono, archivo, tags, fechaAlta 
+        FROM curriculum
+        WHERE fechaAlta < NOW() && fechaBaja > NOW()
+        ORDER BY  fechaAlta DESC
+        LIMIT 50
+    `);
+    return res.send(cvs);
+});
+app.get("/buscar", acount_1.isAuth.premium, async (req, res) => {
+    let terminos;
+    if (typeof req.query.search == "string") {
+        terminos = req.query.search.split(",").map(s => {
+            return ` tags LIKE ${db_1.default.escape("%" + s.trim() + "%")} `;
+        }).join("||");
+        let cvs = await db_1.default.query(`
+            SELECT nombre, email, telefono, archivo, tags, fechaAlta 
+            FROM curriculum
+            WHERE fechaAlta < NOW() && fechaBaja > NOW() &&
+                ${terminos}
+            ORDER BY fechaAlta DESC
+        `);
+        return res.send(cvs);
+    }
+});
 app.post("/", multer_1.default().array("cv", 1), async (req, res) => {
     let cv;
     let cvBuffer;
@@ -44,7 +70,7 @@ app.post("/", multer_1.default().array("cv", 1), async (req, res) => {
                 ${db_1.default.escape(userData.nombre)},
                 ${db_1.default.escape(userData.email)},
                 ${db_1.default.escape(userData.telefono)},
-                ${db_1.default.escape("/uploads/cv/" + pathId)},
+                ${db_1.default.escape(pathId)},
                 ${db_1.default.escape(userData.tags)},
                 ${db_1.default.escape(claveSeguridad)},
                 ${db_1.default.escape(new Date(2999, 1, 1))},
@@ -54,7 +80,7 @@ app.post("/", multer_1.default().array("cv", 1), async (req, res) => {
             ON DUPLICATE KEY UPDATE 
                 nombre = ${db_1.default.escape(userData.nombre)},
                 telefono = ${db_1.default.escape(userData.telefono)},
-                archivo = ${db_1.default.escape("/uploads/cv/" + pathId)},
+                archivo = ${db_1.default.escape(pathId)},
                 tags = ${db_1.default.escape(userData.tags)},
                 claveSeguridad= ${db_1.default.escape(claveSeguridad)},
                 fechaBaja = ${db_1.default.escape(moment_1.default().add(15, "days").toDate())}
@@ -131,14 +157,6 @@ app.post("/recuperoclave", async (req, res) => {
     catch (err) {
         res.status(500);
     }
-});
-app.get("/", acount_1.isAuth.premium, async (req, res) => {
-    let cvs = db_1.default.query(`
-        SELECT nombre, email, telefono, archivo, tags, fechaAlta 
-        FROM curriculum
-        ORDER BY DESC fechaAlta
-        LIMIT 50
-    `);
 });
 exports.default = app;
 //# sourceMappingURL=curriculum.js.map
