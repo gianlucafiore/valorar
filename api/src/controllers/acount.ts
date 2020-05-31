@@ -445,13 +445,14 @@ app.post('/registro', async (req:Request, res:Response)=>
             INSERT INTO acountUser (${Object.keys(data).join(",")}) 
                         values ${db.escape(Object.values(data))}
         `);
-        sendMail(data.email, "Confirmar cuenta de VALOR-AR",`
-            <p>Gracias por formar parte de nuestro equipo!</p>
+        sendMail(data.email, "Confirmar cuenta de VALOR-AR",
+        `   <p>Gracias por formar parte de nuestro equipo!</p>
             <p>Para poder comenzar a usar la cuenta deberás validarla haciendo 
                 <a href="${config.host}/api/acount/validar?user=${user.insertId}&clave=${data.claveValidacion}">
                     click acá
                 </a>
             </p>
+            <p>Tu nombre de USUARIO es: <b>${data.userName}</b></p>
         `)
         return res.send(user);
     }
@@ -573,6 +574,18 @@ app.get("/autonomos",async (req,res)=>{
     `)
     return res.send(autonomos);
 })
+app.get("/recientes",async (req,res)=>{
+    let recientes:[] = await db.query(`
+        SELECT id, razonSocial, titulo, imagenPerfil 
+        FROM acountUser        
+        WHERE fechaAlta < NOW() 
+        && fechaBaja > NOW()
+        && imagenPerfil IS NOT NULL
+        ORDER BY id DESC
+        LIMIT 50
+    `)
+    return res.send(recientes);
+})
 
 
 function createToken(user:acountUser)
@@ -583,7 +596,7 @@ function createToken(user:acountUser)
         rol: user.rol,
         name:user.razonSocial,
         iat: moment().unix(),
-        exp: moment().add(14,'days').unix()
+        exp: moment().add(30,'days').unix()
     };
     return jwt.encode(payload, config.apiKey);
 }

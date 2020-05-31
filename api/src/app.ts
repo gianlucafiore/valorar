@@ -4,7 +4,7 @@ import cors from 'cors';
 import upload from './controllers/uploads'
 import path from 'path'
 import curriculum from './controllers/curriculum'
-
+import buscador from './controllers/buscador'
 
 const app = express();
 app.use(express.json());
@@ -13,6 +13,7 @@ app.use(express.static(path.join(__dirname,"/public")))
 app.use("/api/acount",acount)
 app.use("/api/upload", upload)
 app.use("/api/curriculum", curriculum)
+app.use("/api/buscador", buscador)
 
 
 app.listen(5000, ()=>console.log("on port 5000"))

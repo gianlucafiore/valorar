@@ -24,7 +24,7 @@ const Empresas = ()=>{
                     )
                 }</Row>)
             }
-            console.log(items)
+            console.log(data)
             setLista(items)
         })
     },[])
