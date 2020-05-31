@@ -289,7 +289,7 @@ export default Perfil;
 
 function ModalFotoPerfil(props) {
     const [show, setShow] = useState(false);
-    const [crop, setCrop] = useState({ aspect: 16 / 16 });  
+    const [crop, setCrop] = useState({ aspect: 16 / 16, unit:"%", width: 50, height: 50 });  
     const [pathTempFoto,setPathTempFoto] = useState("");
     const [originalName, setOriginalNAme] = useState("");
     const subirImagen = (imagen)=>{ 
@@ -343,18 +343,17 @@ function ModalFotoPerfil(props) {
                     <input accept='.jpg, .png, .jpeg' type="file" onChange={e=>{ 
                         subirImagen(e.target.files[0])
                     }}/>
-                
+                {pathTempFoto?<label className='text-danger'>
+                        <b>Clickear y arrastrar en la foto para redimensionar</b>
+                </label>:null}
                 <ReactCrop 
                     src={pathTempFoto} 
-                    crop={crop} 
-                    
-                    // onImageLoaded={image => setFoto(image)}
-                    onChange={(newCrop,percentCrop) => {
-                        console.log(percentCrop)
+                    crop={crop}  
+                    onChange={(newCrop,percentCrop) => { 
                         setCrop(percentCrop)
                     }}
                 />
-                {pathTempFoto?<small>Clickear y arrastrar en la foto para redimensionar</small>:null}
+                
             </Modal.Body>
             <Modal.Footer>
             <Button variant="secondary" onClick={()=>setShow(false)}>
@@ -370,7 +369,7 @@ function ModalFotoPerfil(props) {
 
 function ModalFotoPortada(props) {
     const [show, setShow] = useState(false);
-    const [crop, setCrop] = useState({ aspect: 16 / 4 });  
+    const [crop, setCrop] = useState({ aspect: 16 / 4, unit:"%", width: 100, height: 25 });
     const [pathTempFoto,setPathTempFoto] = useState("");
     const [originalName, setOriginalNAme] = useState("");
     const subirImagen = (imagen)=>{ 
@@ -425,15 +424,17 @@ function ModalFotoPortada(props) {
                     subirImagen(e.target.files[0])
                     
                 }}/>
+                {pathTempFoto?<label className='text-danger'>
+                        <b>Clickear y arrastrar en la foto para redimensionar</b>
+                </label>:null}
                 <ReactCrop 
                     src={pathTempFoto} 
                     crop={crop}  
-                    onChange={(newCrop,percentCrop) => {
-                        console.log(percentCrop)
+                    onChange={(newCrop,percentCrop) => { 
                         setCrop(percentCrop)
                     }}
                 />
-                {pathTempFoto?<small>Clickear y arrastrar en la foto para redimensionar</small>:null}
+                
             </Modal.Body>
             <Modal.Footer>
             <Button variant="secondary" onClick={()=>setShow(false)}>
