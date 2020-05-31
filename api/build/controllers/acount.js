@@ -70,7 +70,7 @@ class IsAuth {
         if (payload.exp <= moment_1.default().unix()) {
             return res.status(401).send({ message: "El token ha expirado" });
         }
-        if (payload.role != 'premium' || payload.role != 'admin') {
+        if (payload.role != 'premium' && payload.role != 'moderador' && payload.role != 'admin') {
             return res.status(403).send({ message: "Se requiere rol mínimo moderador" });
         }
         next();
@@ -86,7 +86,7 @@ app.get('/', exports.isAuth.simple, (req, res) => {
         return res.status(200).send({
             id: payload.sub,
             nombre: payload.name,
-            rol: payload.role
+            rol: payload.rol
         });
     }
     else
@@ -349,12 +349,14 @@ app.post('/login', async (req, res) => {
         roles[roles["admin"] = 3] = "admin";
     })(roles || (roles = {}));
     if (acount.length == 1 && compareHash(req.body.pass + "", acount[0].contrasenia)) {
+        acount[0].role = roles[acount[0].rol];
         let token = createToken(acount[0]);
         return res.send({
             id: acount[0].id,
             razonSocial: acount[0].razonSocial,
             token: token,
-            role: roles[acount[0].rol]
+            role: roles[acount[0].rol],
+            rol: acount[0].rol
         });
     }
     else
@@ -509,7 +511,8 @@ app.get("/autonomos", async (req, res) => {
 function createToken(user) {
     const payload = {
         sub: user.id,
-        role: user.rol,
+        role: user.role,
+        rol: user.rol,
         name: user.razonSocial,
         iat: moment_1.default().unix(),
         exp: moment_1.default().add(14, 'days').unix()

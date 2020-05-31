@@ -105,7 +105,7 @@ export default ()=>{
                     <Nav className="mr-auto ml-auto">
                         <Nav.Link href="#empresas"><FaRegBuilding/> Empresas</Nav.Link>
                         <Nav.Link href="#autonomos"><FaHandsHelping/> Autónomos</Nav.Link>
-                        {user.rol > 0 ? <Nav.Link href="#cv"><FaRegAddressCard/> CV Postulantes</Nav.Link> : null}
+                        {user.rol > 0 ? <Nav.Link href="#vercvs"><FaRegAddressCard/> CV Postulantes</Nav.Link> : null}
                         <Nav.Link href="#info"><FaRegQuestionCircle/> Quienes somos</Nav.Link>
                     </Nav>
                     <Nav className="mr-0"> 
