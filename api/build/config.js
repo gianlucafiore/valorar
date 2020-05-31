@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 let config = {
-    host: "http://valor-ar.com.ar:5000",
+    host: "https://valor-ar.com.ar",
     apiKey: "65465798asdas--podaw4234asd4asgh5h464asd-.",
     dbConn: {
         user: "sistema",
