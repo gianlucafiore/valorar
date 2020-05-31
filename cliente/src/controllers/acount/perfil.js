@@ -340,7 +340,7 @@ function ModalFotoPerfil(props) {
                 <Modal.Title>imagen</Modal.Title>
             </Modal.Header>
             <Modal.Body> 
-                    <input type="file" onChange={e=>{ 
+                    <input accept='.jpg, .png, .jpeg' type="file" onChange={e=>{ 
                         subirImagen(e.target.files[0])
                     }}/>
                 
@@ -421,8 +421,9 @@ function ModalFotoPortada(props) {
                 <Modal.Title>imagen</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <input type="file" onChange={e=>{ 
+                <input accept='.jpg, .png, .jpeg' type="file" onChange={e=>{ 
                     subirImagen(e.target.files[0])
+                    
                 }}/>
                 <ReactCrop 
                     src={pathTempFoto} 
