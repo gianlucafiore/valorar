@@ -386,13 +386,13 @@ app.post('/registro', async (req, res) => {
             INSERT INTO acountUser (${Object.keys(data).join(",")}) 
                         values ${db_1.default.escape(Object.values(data))}
         `);
-        emails_1.default(data.email, "Confirmar cuenta de VALOR-AR", `
-            <p>Gracias por formar parte de nuestro equipo!</p>
+        emails_1.default(data.email, "Confirmar cuenta de VALOR-AR", `   <p>Gracias por formar parte de nuestro equipo!</p>
             <p>Para poder comenzar a usar la cuenta deberás validarla haciendo 
                 <a href="${config_1.default.host}/api/acount/validar?user=${user.insertId}&clave=${data.claveValidacion}">
                     click acá
                 </a>
             </p>
+            <p>Tu nombre de USUARIO es: <b>${data.userName}</b></p>
         `);
         return res.send(user);
     }
@@ -508,6 +508,18 @@ app.get("/autonomos", async (req, res) => {
     `);
     return res.send(autonomos);
 });
+app.get("/recientes", async (req, res) => {
+    let recientes = await db_1.default.query(`
+        SELECT id, razonSocial, titulo, imagenPerfil 
+        FROM acountUser        
+        WHERE fechaAlta < NOW() 
+        && fechaBaja > NOW()
+        && imagenPerfil IS NOT NULL
+        ORDER BY id DESC
+        LIMIT 50
+    `);
+    return res.send(recientes);
+});
 function createToken(user) {
     const payload = {
         sub: user.id,
@@ -515,7 +527,7 @@ function createToken(user) {
         rol: user.rol,
         name: user.razonSocial,
         iat: moment_1.default().unix(),
-        exp: moment_1.default().add(14, 'days').unix()
+        exp: moment_1.default().add(30, 'days').unix()
     };
     return jwt_simple_1.default.encode(payload, config_1.default.apiKey);
 }

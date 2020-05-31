@@ -60,7 +60,7 @@ app.post("/", multer_1.default().array("cv", 1), async (req, res) => {
             return res.status(403).send("no se proporcionó una clave de seguridad o la misma es errónea");
         }
         if (consultaEmail.length > 0 && req.query.key == consultaEmail[0].claveSeguridad) {
-            fs_1.default.unlinkSync(path_1.default.join(__dirname, "../private/" + consultaEmail[0].archivo));
+            fs_1.default.unlinkSync(path_1.default.join(__dirname, "../private/uploads/cv/" + consultaEmail[0].archivo));
             claveSeguridad = req.query.key.toString();
         }
         fs_1.default.writeFileSync(pathToWrite, cvBuffer);
