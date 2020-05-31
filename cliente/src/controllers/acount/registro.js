@@ -9,8 +9,9 @@ const Registro = ()=>{
     const [pass,setPass] = React.useState("")
     const [rPass,setrPass] = React.useState("")
     const [rPassBorder,setrPassBorder] = React.useState({})
-    const [rSocialBorder,setrSocialBorder] = React.useState({l:"", b:""})
+    const [rSocialBorder,setrSocialBorder] = React.useState({l:"Será necesario para acceder a tu cuenta", b:"", textColor:"text-muted"})
     const [registrado, setRegistrado] = useState(false)
+    const [tipo, setTipo] = useState(1)
     
     const submitForm = e => {
         e.preventDefault();
@@ -31,12 +32,13 @@ const Registro = ()=>{
                     razonSocial,
                     email,
                     pass,
+                    tipo
                 })
             })
             .then(data => {
                 if(data.status == 402)
                 {
-                    setrSocialBorder({l:"El nombre de usuario se encuentra en uso", b:"border border-danger"})
+                    setrSocialBorder({l:"El nombre de usuario se encuentra en uso", b:"border border-danger",textColor:"text-danger"})
                 }else
                 if(data.status == 200)
                 {
@@ -67,22 +69,38 @@ const Registro = ()=>{
                                     <Form.Group>
                                         <label htmlFor="rsocial">* Nombre de Usuario</label>
                                         <input minLength={4} maxLength={130} required value={userName} onChange={e => setUserName(e.target.value)}
-                                            id="rsocial" type="text" className={"form form-control rounded-0 "} required/>
-                                        <small className="text-muted">Será necesario para acceder a tu cuenta</small>
-                                        <small className="text-muted">{rSocialBorder.l}</small>
+                                            id="rsocial" type="text" className={"form form-control rounded-0 "+rSocialBorder.b} required/>
+                                        {/* <small className="text-muted">Será necesario para acceder a tu cuenta</small> */}
+                                        <small className={rSocialBorder.textColor}>{rSocialBorder.l}</small>
                                     </Form.Group>
-                                    <Form.Group>
-                                        <label htmlFor="rsocial">* Razón social</label>
-                                        <input required value={razonSocial} onChange={e => setRazonSocial(e.target.value)}
-                                            id="rsocial" type="text" className={"form form-control rounded-0 "} placeholder="Persona S.R.L" required/>
-                                        <small className="text-muted">Como querés que vean tu negocio</small>
+                                    <Row>
+                                        <Col>
+                                            <Form.Group>
+                                                <label htmlFor="rsocial">* Razón social</label>
+                                                <input required value={razonSocial} onChange={e => setRazonSocial(e.target.value)}
+                                                    id="rsocial" type="text" className={"form form-control rounded-0 "} placeholder="Persona S.R.L" required/>
+                                                <small className="text-muted">Como querés que vean tu negocio</small>
+                                            </Form.Group>                                        
+                                        </Col> 
+                                        <Col>
+                                        <Form.Group>
+                                        <label htmlFor="rsocial">* Tipo Organización</label>
+                                        <select className='form form-control rounded-0' onChange={e =>{
+                                            setTipo(e.target.value)
+                                        }} value={tipo}>
+                                            <option value='1'>Autónomo</option>
+                                            <option value='2'>Empresa</option>
+                                        </select>
+                                        <small className="text-muted">Cómo autodefinís tu actividad?</small>
                                     </Form.Group>
+                                        </Col>
+                                    </Row>
                                     <Form.Group>
                                         <label htmlFor="email">* Email</label>
                                         <input value={email} onChange={e => setEmail(e.target.value)}
-                                            required type="email" id="email" className={"form form-control rounded-0 "+rSocialBorder.b}
+                                            required type="email" id="email" className={"form form-control rounded-0 "}
                                             placeholder="info@ejemplo.com"/>
-                                        <small className='text-muted'>La necesitaremos para validar la cuenta</small>
+                                        <small className='text-primary'>La necesitaremos para validar la cuenta</small>
                                         
                                     </Form.Group> 
                                     <Form.Group>

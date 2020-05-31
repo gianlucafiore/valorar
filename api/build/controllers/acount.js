@@ -380,7 +380,8 @@ app.post('/registro', async (req, res) => {
             fechaBaja: new Date(),
             fechaCreacion: new Date(),
             rol: 0,
-            claveValidacion: claveValidacion
+            claveValidacion: claveValidacion,
+            tipo: req.body.tipo
         };
         let user = await db_1.default.query(`
             INSERT INTO acountUser (${Object.keys(data).join(",")}) 
@@ -408,12 +409,14 @@ app.get("/validar", async (req, res) => {
         WHERE id = ${db_1.default.escape(user)} && 
               claveValidacion = ${db_1.default.escape(clave)}
               && fechaAlta > now()
+              
     `);
     if (userExist.length == 1) {
         await db_1.default.query(`
             UPDATE acountUser 
             SET claveValidacion = "",
-                fechaAlta = ${db_1.default.escape(new Date())}
+                fechaAlta = ${db_1.default.escape(new Date())},
+                fechaBaja = '29990101'
             WHERE id = ${db_1.default.escape(user)}
         `);
         return res.redirect("/#validado");

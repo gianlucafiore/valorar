@@ -439,7 +439,8 @@ app.post('/registro', async (req:Request, res:Response)=>
             fechaBaja: new Date(),
             fechaCreacion: new Date(),
             rol: 0,
-            claveValidacion: claveValidacion
+            claveValidacion: claveValidacion,
+            tipo:req.body.tipo
         }; 
         let user = await db.query(`
             INSERT INTO acountUser (${Object.keys(data).join(",")}) 
@@ -468,13 +469,15 @@ app.get("/validar",async (req,res)=>{
         WHERE id = ${db.escape(user)} && 
               claveValidacion = ${db.escape(clave)}
               && fechaAlta > now()
+              
     `)
     if(userExist.length == 1)
     {
         await db.query(`
             UPDATE acountUser 
             SET claveValidacion = "",
-                fechaAlta = ${db.escape(new Date())}
+                fechaAlta = ${db.escape(new Date())},
+                fechaBaja = '29990101'
             WHERE id = ${db.escape(user)}
         `)
         return res.redirect("/#validado")
