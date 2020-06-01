@@ -133,10 +133,11 @@ const Registro = ()=>{
                                 </Card.Subtitle>
                                 <hr></hr>
                                 <Card.Title>
-                                    Acabamos de enviar un email a:
+                                    Acabamos de enviar un email de validación a:
                                 </Card.Title> 
                                 <h2>{email}</h2>
                                 <hr></hr>
+                                <p className='text-danger'>En caso de no visualizar el email, revisá en la bandeja de no deseados</p>
                                 <small>Por favor revisá tu cuenta de correo electrónico para validar.
                                     En caso de ser incorrecta la dirección ingresada, deberá recargar los datos para su registro en VALOR-AR
                                 </small>
