@@ -31,7 +31,8 @@ const Login = (props)=>{
                 .then(data => {
                     localStorage.session =  `Bearer ${data.token}`;
                     //props.setUser({id:data.id,razonSocial:data.razonSocial})
-                    window.location = "/#profile/"+data.id
+                    window.location  = "/#profile/"+data.id
+                    window.location.reload()
                 })
             }
         })
