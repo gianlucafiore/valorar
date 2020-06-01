@@ -26,9 +26,11 @@ const Perfil = (props)=>{
     const [seguido, setSeguido] = useState(true); 
     const [propietario, setPropietario] = useState(""); 
     const [profesion, setProfesion] = useState(""); 
+    const [showBienvenida, setShowBienvenida] = useState(false)
 
 
     useEffect(()=>{ 
+        
         let id = window.location.hash.slice(1).split("/")[1]
         if(!user.id)
         fetch(config.url+'/api/acount/profile/'+id,{ 
@@ -45,7 +47,7 @@ const Perfil = (props)=>{
                 setVinculos(d.vinculos)
                 setDireccion(d.direccionLocalidad)
                 setVisitas(d.visitas)
-                setTelefono(d.telefono)
+                setTelefono(d.telefono ? d.telefono : "")
                 setEmail(d.email)
                 setTags(d.tags ? d.tags : "")
                 setTitulo(d.titulo ? d.titulo : "")
@@ -55,9 +57,11 @@ const Perfil = (props)=>{
                 setPropietario(d.propietario)
                 setCanFollow(d.canFollow)
                 setProfesion(d.profesion)
+                let isBienvenido = d.canEdit && d.telefono == "" && d.titulo == "" 
+                setShowBienvenida(isBienvenido)
             }) 
         })  
-    })
+    },[])
 
     const guardar = ()=>{
         if(window.confirm("¿Seguro que desea aplicar los cambios?"))
@@ -121,6 +125,22 @@ const Perfil = (props)=>{
     
     return(
         <React.Fragment>
+            {user.canEdit ? 
+                <Modal show={showBienvenida} onHide={()=> setShowBienvenida(false)}>
+                    <Modal.Header closeButton>
+                    <Modal.Title className='text-primary'>¡Bienvenido a tu perfil en VALOR-AR!</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                    <p>Sería genial que lo dejes bien completo para presentar tu actividad</p>
+                    <p>Podrías empezar por cargar una <strong> foto de perfil y de portada</strong>, tus datos de <strong>contacto</strong>, y una buena <strong>descripción</strong> de tus <strong>productos/servicios</strong> con fotos formateo de texto</p>
+                    </Modal.Body>
+                    <Modal.Footer>
+                    <Button variant="secondary" onClick={()=> setShowBienvenida(false)}>
+                        Cerrar
+                    </Button> 
+                    </Modal.Footer>
+                </Modal>
+            : null}
             <Navbar bg="dark" expand="lg" variant="dark" className="mb-2">
                 <Navbar.Brand href="#home">O</Navbar.Brand>                
             </Navbar> 
@@ -510,3 +530,30 @@ function FormCambioContrasenia(props) {
       </>
     );
   } 
+
+  function ModalBienvenida(props) {
+    const [show, setShow] = useState(props.showBienvenida);
+  
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
+  
+    return (
+      <> 
+        <Modal show={show} onHide={handleClose}>
+          <Modal.Header closeButton>
+            <Modal.Title className='text-primary'>¡Bienvenido a tu perfil!</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+          <p>Sería genial que lo dejes bien completo para presentar tu actividad</p>
+          <p>Podrías empezar por cargar una <strong> foto de perfil y de portada</strong>, tus datos de <strong>contacto</strong>, y una buena <strong>descripción</strong> de tus <strong>productos/servicios</strong> con fotos formateo de texto</p>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleClose}>
+              Cerrar
+            </Button> 
+          </Modal.Footer>
+        </Modal>
+      </>
+    );
+  }
+  

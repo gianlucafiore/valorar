@@ -10,7 +10,7 @@ const Registro = ()=>{
     const [rPass,setrPass] = React.useState("")
     const [rPassBorder,setrPassBorder] = React.useState({})
     const [rSocialBorder,setrSocialBorder] = React.useState({l:"Será necesario para acceder a tu cuenta", b:"", textColor:"text-muted"})
-    const [registrado, setRegistrado] = useState(false)
+    const [registrado, setRegistrado] = useState(true)
     const [tipo, setTipo] = useState(1)
     
     const submitForm = e => {
