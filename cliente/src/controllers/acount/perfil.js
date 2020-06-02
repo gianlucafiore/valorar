@@ -339,7 +339,7 @@ function ModalFotoPerfil(props) {
             },
             data: formData,
             onUploadProgress: p =>{
-                setCargando(p.total*100/p.loaded)
+                setCargando(p.total/p.loaded*100)
             }
         })
         //.then(result => result.json())
@@ -419,22 +419,44 @@ function ModalFotoPortada(props) {
     const [crop, setCrop] = useState({ aspect: 16 / 4, unit:"%", width: 100, height: 25 });
     const [pathTempFoto,setPathTempFoto] = useState("");
     const [originalName, setOriginalNAme] = useState("");
+    const [cargando, setCargando] = useState("");
     const subirImagen = (imagen)=>{ 
         let formData = new FormData();
         let headers = new Headers();
         headers.append("Authorization", localStorage.session)
         formData.append("temp", imagen); 
 
-        fetch(config.url+"/api/acount/portadaphoto/"+props.idUser,{
-            method:"post",
-            headers,
-            body: formData
+        // fetch(config.url+"/api/acount/portadaphoto/"+props.idUser,{
+        //     method:"post",
+        //     headers,
+        //     body: formData
+        // })
+        // .then(result => result.json())
+        // .then(result =>{
+        //     console.log(result.originalName)
+        //     setOriginalNAme(result.originalName)
+        //     setPathTempFoto(config.url+result.path)
+        // })
+        axios.request({
+            url:config.url+"/api/acount/portadaphoto/"+props.idUser,
+            method:"POST",
+            headers:{
+                Authorization:localStorage.session
+            },
+            data: formData,
+            onUploadProgress: p =>{
+                setCargando(p.total/p.loaded*100)
+            }
         })
-        .then(result => result.json())
-        .then(result =>{
-            console.log(result.originalName)
-            setOriginalNAme(result.originalName)
-            setPathTempFoto(config.url+result.path)
+        //.then(result => result.json())
+        .then(data =>{
+            if(data.status == 200)
+            {
+                setCargando("")
+                let result = data.data
+                setOriginalNAme(result.originalName)
+                setPathTempFoto(config.url+result.path)
+            }
         })
     }
     const sendResizeImage = (name)=>{
