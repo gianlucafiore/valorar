@@ -3,7 +3,8 @@ import { Container, Col, Row, Card, Button, Image, Form, ButtonGroup, Badge, Mod
 import Jodit from 'jodit-react';
 import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
-import {FaPlus} from 'react-icons/fa'
+import {FaPlus} from 'react-icons/fa';
+import axios from 'axios';
 
 import config from '../../config'; 
 
@@ -312,22 +313,44 @@ function ModalFotoPerfil(props) {
     const [crop, setCrop] = useState({ aspect: 16 / 16, unit:"%", width: 50, height: 50 });  
     const [pathTempFoto,setPathTempFoto] = useState("");
     const [originalName, setOriginalNAme] = useState("");
+    const [cargando, setCargando] = useState("");
     const subirImagen = (imagen)=>{ 
         let formData = new FormData();
         let headers = new Headers();
         headers.append("Authorization", localStorage.session)
         formData.append("temp", imagen); 
 
-        fetch(config.url+"/api/acount/profilephoto/"+props.idUser,{
-            method:"post",
-            headers,
-            body: formData
+        // fetch(config.url+"/api/acount/profilephoto/"+props.idUser,{
+        //     method:"post",
+        //     headers,
+        //     body: formData
+        // })
+        // .then(result => result.json())
+        // .then(result =>{
+        //     console.log(result.originalName)
+        //     setOriginalNAme(result.originalName)
+        //     setPathTempFoto(config.url+result.path)
+        // })
+        axios.request({
+            url:config.url+"/api/acount/profilephoto/"+props.idUser,
+            method:"POST",
+            headers:{
+                Authorization:localStorage.session
+            },
+            data: formData,
+            onUploadProgress: p =>{
+                setCargando(p.total*100/p.loaded)
+            }
         })
-        .then(result => result.json())
-        .then(result =>{
-            console.log(result.originalName)
-            setOriginalNAme(result.originalName)
-            setPathTempFoto(config.url+result.path)
+        //.then(result => result.json())
+        .then(data =>{
+            if(data.status == 200)
+            {
+                setCargando("")
+                let result = data.data
+                setOriginalNAme(result.originalName)
+                setPathTempFoto(config.url+result.path)
+            }
         })
     }
     const sendResizeImage = (name)=>{
@@ -366,6 +389,10 @@ function ModalFotoPerfil(props) {
                 {pathTempFoto?<label className='text-danger'>
                         <b>Clickear y arrastrar en la foto para redimensionar</b>
                 </label>:null}
+                <br></br>
+                {
+                    cargando ? `Cargando ${cargando}% ...`:null
+                }
                 <ReactCrop 
                     src={pathTempFoto} 
                     crop={crop}  
