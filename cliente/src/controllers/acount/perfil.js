@@ -339,7 +339,7 @@ function ModalFotoPerfil(props) {
             },
             data: formData,
             onUploadProgress: p =>{
-                setCargando(p.total/p.loaded*100)
+                setCargando(p.loaded/p.total*100)
             }
         })
         //.then(result => result.json())
@@ -445,7 +445,7 @@ function ModalFotoPortada(props) {
             },
             data: formData,
             onUploadProgress: p =>{
-                setCargando(p.total/p.loaded*100)
+                setCargando(p.loaded/p.total*100)
             }
         })
         //.then(result => result.json())
@@ -496,6 +496,9 @@ function ModalFotoPortada(props) {
                 {pathTempFoto?<label className='text-danger'>
                         <b>Clickear y arrastrar en la foto para redimensionar</b>
                 </label>:null}
+                {
+                    cargando ? `Cargando ${cargando}% ...`:null
+                }
                 <ReactCrop 
                     src={pathTempFoto} 
                     crop={crop}  
