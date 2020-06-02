@@ -339,7 +339,7 @@ function ModalFotoPerfil(props) {
             },
             data: formData,
             onUploadProgress: p =>{
-                setCargando(p.loaded/p.total*100)
+                setCargando(Math.round(p.loaded/p.total*100))
             }
         })
         //.then(result => result.json())
@@ -445,7 +445,7 @@ function ModalFotoPortada(props) {
             },
             data: formData,
             onUploadProgress: p =>{
-                setCargando(p.loaded/p.total*100)
+                setCargando(Math.round(p.loaded/p.total*100))
             }
         })
         //.then(result => result.json())

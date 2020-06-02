@@ -383,6 +383,7 @@ const resizeFoto = (req:Request, callb:any)=>
         }              
         
         gm(cprutaArchivo)
+        .quality(55)
         .crop(redimentions.width, redimentions.height, redimentions.left, redimentions.top)
         .write(rutaArchivo,(err) => {
             if(err)
