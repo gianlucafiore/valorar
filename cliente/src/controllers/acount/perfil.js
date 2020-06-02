@@ -419,6 +419,7 @@ function ModalFotoPortada(props) {
     const [crop, setCrop] = useState({ aspect: 16 / 4, unit:"%", width: 100, height: 25 });
     const [pathTempFoto,setPathTempFoto] = useState("");
     const [originalName, setOriginalNAme] = useState("");
+    const [cargando, setCargando] = useState("");
     const subirImagen = (imagen)=>{ 
         let formData = new FormData();
         let headers = new Headers();
