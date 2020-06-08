@@ -20,7 +20,7 @@ const Autonomos = ()=>{
                                 <br></br>
                                 <small>{item.razonSocial}</small>
                                 <br></br>
-                                <small>{item.titulo}</small>
+                                <small>{item.profesion}</small>
                             </a>
                         </Col>
                     )

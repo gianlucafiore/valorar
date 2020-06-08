@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isAuth = void 0;
+exports.capitalizeAll = exports.isAuth = void 0;
 const express_1 = __importDefault(require("express"));
 const jwt_simple_1 = __importDefault(require("jwt-simple"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
@@ -186,16 +186,16 @@ app.put('/profile/:id', exports.isAuth.simple, async (req, res) => {
             // PUEDE EDITAR
             let query = await db_1.default.query(`
                 UPDATE acountUser SET
-                    razonSocial = ${db_1.default.escape(req.body.razonSocial)},
+                    razonSocial = ${db_1.default.escape(exports.capitalizeAll(req.body.razonSocial))},
                     slogan = ${db_1.default.escape(req.body.slogan)},
-                    titulo = ${db_1.default.escape(req.body.titulo)},
+                    titulo = ${db_1.default.escape(exports.capitalizeAll(req.body.titulo))},
                     telefono = ${db_1.default.escape(req.body.telefono)},
                     email = ${db_1.default.escape(req.body.email)},
                     sitioWeb = ${db_1.default.escape(req.body.sitioWeb)},
                     descripcion = ${db_1.default.escape(req.body.descripcion)},
                     direccionLocalidad = ${db_1.default.escape(req.body.direccion)},
                     tags = ${db_1.default.escape(req.body.tags)},
-                    profesion = ${db_1.default.escape(req.body.profesion)}
+                    profesion = ${db_1.default.escape(exports.capitalizeAll(req.body.profesion))}
                 WHERE id = ${Number(req.params.id)}
             `);
             console.log(req.body);
@@ -325,6 +325,7 @@ const resizeFoto = (req, callb) => {
             top: ~~(dimensions.height * parseInt(req.body.crop.y) / 100)
         };
         gm(cprutaArchivo)
+            .quality(55)
             .crop(redimentions.width, redimentions.height, redimentions.left, redimentions.top)
             .write(rutaArchivo, (err) => {
             if (err)
@@ -373,7 +374,7 @@ app.post('/registro', async (req, res) => {
     if (user.length == 0 && validator_1.default.isEmail(req.body.email) && req.body.pass.length >= 6 && req.body.userName.length >= 4) {
         let data = {
             userName: req.body.userName,
-            razonSocial: req.body.razonSocial,
+            razonSocial: exports.capitalizeAll(req.body.razonSocial),
             email: req.body.email,
             contrasenia: genHash(req.body.pass + ""),
             fechaAlta: new Date(2999, 1, 1),
@@ -493,17 +494,17 @@ app.post("/cambiarclave/:id", exports.isAuth.simple, async (req, res) => {
 });
 app.get("/empresas", async (req, res) => {
     let empresas = await db_1.default.query(`
-        SELECT id, razonSocial, titulo, imagenPerfil 
+        SELECT id, razonSocial, profesion, imagenPerfil 
         FROM acountUser        
         WHERE fechaAlta < now() 
         && fechaBaja > now()
-        && tipo = 2
+        && tipo = 2 
     `);
     return res.send(empresas);
 });
 app.get("/autonomos", async (req, res) => {
     let autonomos = await db_1.default.query(`
-        SELECT id, razonSocial, titulo, imagenPerfil 
+        SELECT id, razonSocial, profesion, imagenPerfil 
         FROM acountUser        
         WHERE fechaAlta < now() 
         && fechaBaja > now()
@@ -542,5 +543,8 @@ function genHash(rndString) {
 function compareHash(rndString, hash) {
     return bcryptjs_1.default.compareSync(rndString, hash);
 }
+exports.capitalizeAll = (str) => {
+    return str.split(" ").map(s => s.slice(0, 1).toUpperCase() + s.slice(1)).join(" ");
+};
 exports.default = app;
 //# sourceMappingURL=acount.js.map
