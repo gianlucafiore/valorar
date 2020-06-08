@@ -236,16 +236,16 @@ app.put('/profile/:id', isAuth.simple,async (req:Request,res:Response)=> {
             // PUEDE EDITAR
             let query = await db.query(`
                 UPDATE acountUser SET
-                    razonSocial = ${db.escape(req.body.razonSocial)},
+                    razonSocial = ${db.escape(capitalizeAll(req.body.razonSocial))},
                     slogan = ${db.escape(req.body.slogan)},
-                    titulo = ${db.escape(req.body.titulo)},
+                    titulo = ${db.escape(capitalizeAll(req.body.titulo))},
                     telefono = ${db.escape(req.body.telefono)},
                     email = ${db.escape(req.body.email)},
                     sitioWeb = ${db.escape(req.body.sitioWeb)},
                     descripcion = ${db.escape(req.body.descripcion)},
                     direccionLocalidad = ${db.escape(req.body.direccion)},
                     tags = ${db.escape(req.body.tags)},
-                    profesion = ${db.escape(req.body.profesion)}
+                    profesion = ${db.escape(capitalizeAll(req.body.profesion))}
                 WHERE id = ${Number(req.params.id)}
             `)
                console.log(req.body)
@@ -430,10 +430,10 @@ app.post('/registro', async (req:Request, res:Response)=>
         && fechaAlta < now()
     `);
     if(user.length == 0 && validator.isEmail(req.body.email) && req.body.pass.length >= 6 && req.body.userName.length >= 4)
-    {
+    { 
         let data = {
             userName: req.body.userName,
-            razonSocial: req.body.razonSocial,
+            razonSocial: capitalizeAll(req.body.razonSocial),
             email: req.body.email,
             contrasenia: genHash(req.body.pass+""),
             fechaAlta: new Date(2999,1,1),
@@ -560,17 +560,17 @@ app.post("/cambiarclave/:id",isAuth.simple,async(req,res)=>{
 
 app.get("/empresas",async (req,res)=>{
     let empresas = await db.query(`
-        SELECT id, razonSocial, titulo, imagenPerfil 
+        SELECT id, razonSocial, profesion, imagenPerfil 
         FROM acountUser        
         WHERE fechaAlta < now() 
         && fechaBaja > now()
-        && tipo = 2
+        && tipo = 2 
     `)
     return res.send(empresas);
 })
 app.get("/autonomos",async (req,res)=>{
     let autonomos:[] = await db.query(`
-        SELECT id, razonSocial, titulo, imagenPerfil 
+        SELECT id, razonSocial, profesion, imagenPerfil 
         FROM acountUser        
         WHERE fechaAlta < now() 
         && fechaBaja > now()
@@ -616,6 +616,11 @@ function genHash(rndString: string)
 function compareHash(rndString:string, hash:string)
 {
     return bcrypt.compareSync(rndString, hash);
+}
+
+export const capitalizeAll = (str:string)=>
+{
+    return str.split(" ").map(s => s.slice(0,1).toUpperCase() + s.slice(1)).join(" ")
 }
 
 export default app;

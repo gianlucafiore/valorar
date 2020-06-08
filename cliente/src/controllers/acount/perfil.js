@@ -14,8 +14,7 @@ const Perfil = (props)=>{
     const [descripcion,setDescripcion] = useState("");
     const [razonSocial, setRazonSocial] = useState("");
     const [canFollow, setCanFollow] = useState(false);
-    const [vinculos, setVinculos] = useState(0);
-    //const [reputacion, setReputacion] = useState(0);
+    const [vinculos, setVinculos] = useState(0); 
     const [visitas, setVisitas] = useState(0);
     const [telefono, setTelefono] = useState("");
     const [email, setEmail] = useState("");
@@ -58,7 +57,7 @@ const Perfil = (props)=>{
                 setPropietario(d.propietario)
                 setCanFollow(d.canFollow)
                 setProfesion(d.profesion)
-                let isBienvenido = d.canEdit && d.telefono == "" && d.titulo == "" 
+                let isBienvenido = d.canEdit && !d.titulo
                 setShowBienvenida(isBienvenido)
             }) 
         })  
