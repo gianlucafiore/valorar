@@ -620,11 +620,15 @@ function compareHash(rndString:string, hash:string)
 
 export const capitalizeAll = (str:string)=>
 {
+    if(str)
     return str.split(" ").map(s => s.slice(0,1).toUpperCase() + s.slice(1)).join(" ")
+    else return ""
 }
 export const capitalizeFirst = (str:string)=>
 {
+    if(str)
     return str.slice(0,1).toUpperCase() + str.slice(1)
+    else return ""
 }
 
 export default app;
