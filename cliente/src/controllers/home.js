@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Navbar, Card, Form, FormGroup, Button, InputGroup, FormControl, Badge } from 'react-bootstrap';
+import { Container, Row, Col, Navbar, Card, Form, FormGroup, Button, InputGroup, FormControl, Badge, Overlay, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import config from '../config';
 import {FaSearch} from 'react-icons/fa'
 
@@ -16,15 +16,28 @@ const Home = ()=>{
             {
                 items.push(<Row key={i+"row"}>
                 {
-                    d.slice(i*12,i*12+12).map((item,indx)=>
-                        <Col key={indx+"col"} xs='4' sm='3' lg="2" style={{textAlign:"center"}}>
-                            <a href={'/#profile/'+item.id}>
+                    d.slice(i*12,i*12+12).map((item,indx)=>{
+                        const link = 
+                            <a href={'/#profile/'+item.id} title={item.profesion}>
                                 <img width='70px' className='rounded-circle' src={item.imagenPerfil} />
                                 <br></br>
-                                <small>{item.razonSocial}</small>
+                                <small>{item.razonSocial}</small><br/>
                             </a>
-                        </Col>
-                    )
+                        return <Col key={indx+"col"} xs='4' sm='3' lg="2" style={{textAlign:"center"}}>
+                                    {!item.profesion ? link : 
+                                    <OverlayTrigger
+                                        key={indx+"overlay"}
+                                        placement='auto'
+                                        overlay={
+                                            <Tooltip>
+                                                {item.profesion}
+                                            </Tooltip>
+                                        }                                
+                                    >      
+                                    {link}                      
+                                    </OverlayTrigger>}
+                                </Col>
+                    })
                 }</Row>)
             } 
             console.log(items)

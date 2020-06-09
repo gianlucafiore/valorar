@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.capitalizeAll = exports.isAuth = void 0;
+exports.capitalizeFirst = exports.capitalizeAll = exports.isAuth = void 0;
 const express_1 = __importDefault(require("express"));
 const jwt_simple_1 = __importDefault(require("jwt-simple"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
@@ -188,7 +188,7 @@ app.put('/profile/:id', exports.isAuth.simple, async (req, res) => {
                 UPDATE acountUser SET
                     razonSocial = ${db_1.default.escape(exports.capitalizeAll(req.body.razonSocial))},
                     slogan = ${db_1.default.escape(req.body.slogan)},
-                    titulo = ${db_1.default.escape(exports.capitalizeAll(req.body.titulo))},
+                    titulo = ${db_1.default.escape(exports.capitalizeFirst(req.body.titulo))},
                     telefono = ${db_1.default.escape(req.body.telefono)},
                     email = ${db_1.default.escape(req.body.email)},
                     sitioWeb = ${db_1.default.escape(req.body.sitioWeb)},
@@ -514,7 +514,7 @@ app.get("/autonomos", async (req, res) => {
 });
 app.get("/recientes", async (req, res) => {
     let recientes = await db_1.default.query(`
-        SELECT id, razonSocial, titulo, imagenPerfil 
+        SELECT id, razonSocial, profesion, imagenPerfil 
         FROM acountUser        
         WHERE fechaAlta < NOW() 
         && fechaBaja > NOW()
@@ -545,6 +545,9 @@ function compareHash(rndString, hash) {
 }
 exports.capitalizeAll = (str) => {
     return str.split(" ").map(s => s.slice(0, 1).toUpperCase() + s.slice(1)).join(" ");
+};
+exports.capitalizeFirst = (str) => {
+    return str.slice(0, 1).toUpperCase() + str.slice(1);
 };
 exports.default = app;
 //# sourceMappingURL=acount.js.map

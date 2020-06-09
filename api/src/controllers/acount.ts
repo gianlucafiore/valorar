@@ -238,7 +238,7 @@ app.put('/profile/:id', isAuth.simple,async (req:Request,res:Response)=> {
                 UPDATE acountUser SET
                     razonSocial = ${db.escape(capitalizeAll(req.body.razonSocial))},
                     slogan = ${db.escape(req.body.slogan)},
-                    titulo = ${db.escape(capitalizeAll(req.body.titulo))},
+                    titulo = ${db.escape(capitalizeFirst(req.body.titulo))},
                     telefono = ${db.escape(req.body.telefono)},
                     email = ${db.escape(req.body.email)},
                     sitioWeb = ${db.escape(req.body.sitioWeb)},
@@ -580,7 +580,7 @@ app.get("/autonomos",async (req,res)=>{
 })
 app.get("/recientes",async (req,res)=>{
     let recientes:[] = await db.query(`
-        SELECT id, razonSocial, titulo, imagenPerfil 
+        SELECT id, razonSocial, profesion, imagenPerfil 
         FROM acountUser        
         WHERE fechaAlta < NOW() 
         && fechaBaja > NOW()
@@ -621,6 +621,10 @@ function compareHash(rndString:string, hash:string)
 export const capitalizeAll = (str:string)=>
 {
     return str.split(" ").map(s => s.slice(0,1).toUpperCase() + s.slice(1)).join(" ")
+}
+export const capitalizeFirst = (str:string)=>
+{
+    return str.slice(0,1).toUpperCase() + str.slice(1)
 }
 
 export default app;
