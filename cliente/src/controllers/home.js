@@ -18,7 +18,7 @@ const Home = ()=>{
                 {
                     d.slice(i*12,i*12+12).map((item,indx)=>{
                         const link = 
-                            <a href={'/#profile/'+item.id} title={item.profesion}>
+                            <a href={'/#profile/'+item.id}>
                                 <img width='70px' className='rounded-circle' src={item.imagenPerfil} />
                                 <br></br>
                                 <small>{item.razonSocial}</small><br/>
