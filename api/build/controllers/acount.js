@@ -544,10 +544,16 @@ function compareHash(rndString, hash) {
     return bcryptjs_1.default.compareSync(rndString, hash);
 }
 exports.capitalizeAll = (str) => {
-    return str.split(" ").map(s => s.slice(0, 1).toUpperCase() + s.slice(1)).join(" ");
+    if (str)
+        return str.split(" ").map(s => s.slice(0, 1).toUpperCase() + s.slice(1)).join(" ");
+    else
+        return "";
 };
 exports.capitalizeFirst = (str) => {
-    return str.slice(0, 1).toUpperCase() + str.slice(1);
+    if (str)
+        return str.slice(0, 1).toUpperCase() + str.slice(1);
+    else
+        return "";
 };
 exports.default = app;
 //# sourceMappingURL=acount.js.map

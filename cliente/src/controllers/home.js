@@ -5,6 +5,7 @@ import {FaSearch} from 'react-icons/fa'
 
 const Home = ()=>{
     const [search, setSearch] = useState("");
+    const [user, setUser] = useState("");
     const [data, setData] = useState("");
     const [recientes, setRecientes] = useState("");
     useEffect(()=>{
@@ -43,6 +44,14 @@ const Home = ()=>{
             console.log(items)
             setRecientes(items)
         })
+        fetch(config.url+"/api/acount",{
+            headers:{
+                Authorization:localStorage.session
+            }
+        })
+        .then(data => data.json())
+        .then(data => setUser(data))
+
     },[])
 
     const buscar = e=>{
@@ -152,16 +161,30 @@ const Home = ()=>{
                             </Col>
                         </Row>
                     </Col>
-                    <Col md="3">                     
-                        <Row>
+                    <Col md="3">      
+                        <Row className='mb-4'>
                             <Col>
                                 <Card style={{borderTop:"solid 3px #2461b2"}} className="rounded-0">
+                                    <Card.Header>
+                                        <h5>Tenés un emprendimiento?</h5>
+                                    </Card.Header>
+                                    <Card.Body>
+                                        <a href={user.id ? `/#profile/${user.id}` : "/#registro"} 
+                                        className="btn btn-danger rounded-0">Presentalo acá!</a><br></br>
+                                        <small>Formará parte de nuestro equipo, aparecerá en las búsquedas</small>
+                                    </Card.Body>
+                                </Card> 
+                            </Col>
+                        </Row>               
+                        <Row>
+                            <Col>
+                                <Card  className="rounded-0">
                                     <Card.Header>
                                         <h5> Buscás trabajo?</h5>
                                     </Card.Header>
                                     <Card.Body>
-                                        <a href='/#cargarcv' className="btn btn-danger rounded-0">Publicá tu CV acá!</a><br></br>
-                                        <small>Se lo haremos llegar directamente a las empresas que forman parte de nuestro equipo</small>
+                                        <a href='/#cargarcv' className="btn btn-info rounded-0">Mandanos tu curriculum!</a><br></br>
+                                        <small>Se lo haremos llegar directamente a las empresas y emprendedores que forman parte de nuestro equipo</small>
                                     </Card.Body>
                                 </Card> 
                             </Col>
