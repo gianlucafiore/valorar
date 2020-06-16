@@ -328,7 +328,7 @@ app.post('/resizephotoperfil/:id',isAuth.simple,async (req:Request,res:Response)
                             WHERE id = ${Number(req.params.id)}
                 `)
                 .then(()=> res.send(200))
-            })
+            }, 133)
         }        
     }
     else res.status(500).send("Not Authenticated");
@@ -358,13 +358,13 @@ app.post('/resizephotoportada/:id',isAuth.simple,async (req:Request,res:Response
                             WHERE id = ${Number(req.params.id)}
                 `)
                 .then(()=> res.send(200))
-            })
+            }, 1000)
         }        
     }
     else res.status(500).send("Not Authenticated");
 })
 
-const resizeFoto = (req:Request, callb:any)=>
+const resizeFoto = (req:Request, callb:any, width:number)=>
 {
     let pathFormed = req.body.originalName
     let dimensions = imageSize(path.join(__dirname,`../public/uploads/images/cp_${pathFormed}`));
@@ -383,8 +383,9 @@ const resizeFoto = (req:Request, callb:any)=>
         }              
         
         gm(cprutaArchivo)
-        .quality(55)
         .crop(redimentions.width, redimentions.height, redimentions.left, redimentions.top)
+        .quality(60)
+        .resize(width)
         .write(rutaArchivo,(err) => {
             if(err)
                 console.error(err)

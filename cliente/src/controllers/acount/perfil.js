@@ -290,6 +290,7 @@ const Perfil = (props)=>{
                                     <Jodit 
                                             value={descripcion}
                                             onChange={c => setDescripcion(c)}
+                                            
                                         /> 
                                     >
                                 </Form.Group>
